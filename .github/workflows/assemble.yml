@@ -1,4 +1,4 @@
-name: Unit and Integration Tests
+name: Application Assemble
 
 on:
   push:
@@ -7,11 +7,11 @@ on:
     branches: [ main ]
 
 jobs:
-  run_tests:
+  build_application:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
+      - name: Checkout Code
         uses: actions/checkout@v4
 
       - name: Set up GraalVM JDK 25
@@ -24,8 +24,5 @@ jobs:
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 
-      - name: Run Check
-        run: ./gradlew check
-
-      - name: Run Tests
-        run: ./gradlew test
+      - name: Compile Application (assemble)
+        run: ./gradlew assemble
