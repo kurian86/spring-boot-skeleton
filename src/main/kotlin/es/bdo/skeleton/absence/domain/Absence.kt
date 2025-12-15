@@ -1,7 +1,7 @@
 package es.bdo.skeleton.absence.domain
 
 import java.time.LocalDate
-import java.util.UUID
+import java.util.*
 
 data class Absence(
     val id: UUID,
