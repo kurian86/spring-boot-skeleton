@@ -1,7 +1,9 @@
-name: Application Build
+name: Application Assemble
 
 on:
   push:
+    branches: [ main ]
+  pull_request:
     branches: [ main ]
 
 jobs:
@@ -22,11 +24,5 @@ jobs:
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 
-      - name: Compile Application (native image)
-        run: ./gradlew nativeCompile
-
-      - name: Upload Compiled Artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: compiled-app-files
-          path: build/native/nativeCompile/
+      - name: Compile Application (assemble)
+        run: ./gradlew assemble
