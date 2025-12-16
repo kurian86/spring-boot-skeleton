@@ -34,6 +34,8 @@ class ArchitectureTests {
             .should().dependOnClassesThat()
             .resideInAnyPackage("..absence.domain..", "..absence.infrastructure..", "..tenant.domain..", "..tenant.infrastructure..")
             .check(classes)
+
+        // Note: All modules can access shared.** without restrictions (shared kernel pattern)
     }
 
     @Test

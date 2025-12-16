@@ -1,5 +1,6 @@
 package es.bdo.skeleton.tenant.infrastructure
 
+import es.bdo.skeleton.tenant.application.TenantContext
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
 import org.springframework.stereotype.Component
