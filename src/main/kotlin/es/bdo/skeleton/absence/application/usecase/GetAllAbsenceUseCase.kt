@@ -1,9 +1,14 @@
 package es.bdo.skeleton.absence.application.usecase
 
 import es.bdo.skeleton.absence.domain.Absence
+import es.bdo.skeleton.absence.domain.IAbsenceRepository
+import org.springframework.stereotype.Service
 
-class GetAllAbsenceUseCase {
+@Service
+class GetAllAbsenceUseCase(
+    private val repository: IAbsenceRepository
+) {
     fun handle(): List<Absence> {
-        return listOf()
+        return repository.findAll()
     }
 }
