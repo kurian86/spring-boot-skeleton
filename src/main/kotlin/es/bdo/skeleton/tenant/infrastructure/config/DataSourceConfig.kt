@@ -1,6 +1,6 @@
 package es.bdo.skeleton.tenant.infrastructure.config
 
-import es.bdo.skeleton.tenant.infrastructure.TenantConfigurationService
+import es.bdo.skeleton.tenant.infrastructure.service.TenantConfigurationService
 import es.bdo.skeleton.tenant.infrastructure.MultiTenantDataSource
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration

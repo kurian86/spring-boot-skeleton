@@ -1,6 +1,6 @@
 package es.bdo.skeleton.tenant.infrastructure.migration
 
-import es.bdo.skeleton.tenant.infrastructure.TenantConfigurationService
+import es.bdo.skeleton.tenant.infrastructure.service.TenantConfigurationService
 import org.flywaydb.core.Flyway
 import org.springframework.boot.CommandLineRunner
 import org.springframework.stereotype.Component

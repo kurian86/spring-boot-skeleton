@@ -1,10 +1,11 @@
+import org.gradle.language.jvm.tasks.ProcessResources
+
 plugins {
 	kotlin("jvm") version "2.3.0-RC3"
 	kotlin("plugin.spring") version "2.3.0-RC3"
 	id("org.springframework.boot") version "4.0.0"
 	id("io.spring.dependency-management") version "1.1.7"
 	id("org.graalvm.buildtools.native") version "0.11.3"
-
 	id("org.flywaydb.flyway") version "11.14.1"
 	id("nu.studer.jooq") version "9.0"
 }
@@ -36,7 +37,18 @@ repositories {
 	mavenCentral()
 }
 
-extra["springModulithVersion"] = "2.0.0"
+val springModulithVersion = project.properties["springModulithVersion"] as String
+
+val catalogDbUrl = project.properties["catalogDbUrl"] as String
+val catalogDbUsername = project.properties["catalogDbUsername"] as String
+val catalogDbPassword = project.properties["catalogDbPassword"] as String
+val catalogDbDriver = project.properties["catalogDbDriver"] as String
+
+val jooqDbUrl = project.properties["jooqDbUrl"] as String
+val jooqDbUsername = project.properties["jooqDbUsername"] as String
+val jooqDbPassword = project.properties["jooqDbPassword"] as String
+val jooqDbDriver = project.properties["jooqDbDriver"] as String
+
 
 dependencies {
 	implementation("org.springframework.boot:spring-boot-starter-data-jdbc")
@@ -68,7 +80,7 @@ dependencies {
 
 dependencyManagement {
 	imports {
-		mavenBom("org.springframework.modulith:spring-modulith-bom:${property("springModulithVersion")}")
+		mavenBom("org.springframework.modulith:spring-modulith-bom:${springModulithVersion}")
 	}
 }
 
@@ -78,14 +90,22 @@ kotlin {
 	}
 }
 
+tasks.withType<ProcessResources> {
+	filesMatching("application*.yaml") {
+		filter<org.apache.tools.ant.filters.ReplaceTokens>(
+			"tokens" to mapOf(
+				"catalogDbUrl" to catalogDbUrl,
+				"catalogDbUsername" to catalogDbUsername,
+				"catalogDbPassword" to catalogDbPassword,
+				"catalogDbDriver" to catalogDbDriver
+			)
+		)
+	}
+}
+
 tasks.withType<Test> {
 	useJUnitPlatform()
 }
-
-val dbDriver = project.properties["dbDriver"] as String
-val dbUrl = project.properties["dbUrl"] as String
-val dbUsername = project.properties["dbUsername"] as String
-val dbPassword = project.properties["dbPassword"] as String
 
 jooq {
 	version.set("3.19.28")
@@ -95,10 +115,10 @@ jooq {
 			jooqConfiguration.apply {
 				logging = org.jooq.meta.jaxb.Logging.WARN
 				jdbc.apply {
-					driver = dbDriver
-					url = dbUrl
-					user = dbUsername
-					password = dbPassword
+					url = jooqDbUrl
+					user = jooqDbUsername
+					password = jooqDbPassword
+					driver = jooqDbDriver
 				}
 
 				generator.apply {
@@ -128,20 +148,32 @@ jooq {
 	}
 }
 
-val flywayTemplateMigrate by tasks.registering(org.flywaydb.gradle.task.FlywayMigrateTask::class) {
-	driver = dbDriver
-	url = dbUrl
-	user = dbUsername
-	password = dbPassword
+val flywayCatalogMigrate by tasks.registering(org.flywaydb.gradle.task.FlywayMigrateTask::class) {
+	url = catalogDbUrl
+	user = catalogDbUsername
+	password = catalogDbPassword
+	driver = catalogDbDriver
 
-	locations = arrayOf("classpath:db/migration/tenant")
+	locations = arrayOf("classpath:/db/migration/catalog")
+
+	baselineOnMigrate = true
+	cleanDisabled = false
+}
+
+val flywayTemplateMigrate by tasks.registering(org.flywaydb.gradle.task.FlywayMigrateTask::class) {
+	url = jooqDbUrl
+	user = jooqDbUsername
+	password = jooqDbPassword
+	driver = jooqDbDriver
+
+	locations = arrayOf("classpath:/db/migration/tenant")
 
 	baselineOnMigrate = true
 	cleanDisabled = false
 }
 
 tasks.named("generateJooq") {
-	dependsOn(flywayTemplateMigrate)
+	dependsOn(flywayCatalogMigrate, flywayTemplateMigrate)
 }
 
 tasks.named("compileKotlin") {

@@ -1,4 +1,4 @@
-package es.bdo.skeleton.tenant.infrastructure
+package es.bdo.skeleton.tenant.infrastructure.service
 
 import com.zaxxer.hikari.HikariDataSource
 import es.bdo.skeleton.tenant.application.TenantProvider
@@ -10,7 +10,8 @@ import javax.sql.DataSource
 @Service
 class TenantConfigurationService(
     private val properties: TenantProperties,
-    private val provider: TenantProvider
+    private val provider: TenantProvider,
+    private val encryptionService: EncryptionService
 ) {
 
     private val dataSources = mutableMapOf<String, DataSource>()
@@ -34,8 +35,7 @@ class TenantConfigurationService(
             poolName = "Tenant-${tenant.id}-Pool"
             jdbcUrl = properties.datasource.urlTemplate.format(tenant.dbDatabase)
             username = tenant.dbUsername
-            // TODO: encrypt passwords
-            password = tenant.dbPassword
+            password = encryptionService.decrypt(tenant.dbPassword)
             driverClassName = properties.datasource.driverClassName
             maximumPoolSize = properties.datasource.maximumPoolSize
             minimumIdle = properties.datasource.minimumIdle
