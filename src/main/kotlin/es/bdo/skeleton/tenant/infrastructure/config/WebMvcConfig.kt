@@ -1,6 +1,6 @@
-package es.bdo.skeleton.main.config
+package es.bdo.skeleton.tenant.infrastructure.config
 
-import es.bdo.skeleton.main.tenant.TenantInterceptor
+import es.bdo.skeleton.tenant.infrastructure.TenantInterceptor
 import org.springframework.context.annotation.Configuration
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer

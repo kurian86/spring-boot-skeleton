@@ -1,11 +1,11 @@
-package es.bdo.skeleton.main.config
+package es.bdo.skeleton.tenant.infrastructure.config
 
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.boot.context.properties.ConfigurationProperties
 import org.springframework.boot.jdbc.autoconfigure.DataSourceProperties
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
-import org.springframework.jdbc.core.JdbcTemplate
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import javax.sql.DataSource
 
 @Configuration
@@ -26,7 +26,7 @@ class CatalogDataSourceConfig {
     fun catalogJdbcTemplate(
         @Qualifier("catalogDataSource")
         catalogDataSource: DataSource
-    ): JdbcTemplate {
-        return JdbcTemplate(catalogDataSource)
+    ): NamedParameterJdbcTemplate {
+        return NamedParameterJdbcTemplate(catalogDataSource)
     }
 }

@@ -1,4 +1,4 @@
-package es.bdo.skeleton.main.tenant
+package es.bdo.skeleton.tenant.infrastructure
 
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
@@ -9,9 +9,9 @@ import org.springframework.web.servlet.HandlerInterceptor
 class TenantInterceptor : HandlerInterceptor {
 
     override fun preHandle(request: HttpServletRequest, response: HttpServletResponse, handler: Any): Boolean {
-        val tenantId = request.getHeader("X-Tenant-ID")
+        val tenantId = request.getHeader("X-Tenant-ID") ?: "default"
 
-        if (!tenantId.isNullOrBlank()) {
+        if (tenantId.isNotBlank()) {
             // TODO: Validate tenantId exists in the system
             TenantContext.tenantId = tenantId
         }

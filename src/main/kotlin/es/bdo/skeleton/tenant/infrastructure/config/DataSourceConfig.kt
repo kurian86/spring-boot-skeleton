@@ -1,7 +1,7 @@
-package es.bdo.skeleton.main.config
+package es.bdo.skeleton.tenant.infrastructure.config
 
-import es.bdo.skeleton.main.tenant.MultiTenantDataSource
-import es.bdo.skeleton.main.tenant.TenantConfigurationService
+import es.bdo.skeleton.tenant.infrastructure.TenantConfigurationService
+import es.bdo.skeleton.tenant.infrastructure.MultiTenantDataSource
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.context.annotation.Primary
@@ -15,7 +15,7 @@ class DataSourceConfig(
     @Bean
     @Primary
     fun dataSource(): DataSource {
-        val activeDataSources = tenantConfigService.loadAllTenantConfigs()
+        val activeDataSources = tenantConfigService.loadAllTenants()
         if (activeDataSources.isEmpty()) {
             throw IllegalStateException("No active tenants found in the catalog database.")
         }

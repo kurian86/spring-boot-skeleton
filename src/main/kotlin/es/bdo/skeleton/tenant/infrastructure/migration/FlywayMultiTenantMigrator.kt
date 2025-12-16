@@ -1,6 +1,6 @@
-package es.bdo.skeleton.main.migration
+package es.bdo.skeleton.tenant.infrastructure.migration
 
-import es.bdo.skeleton.main.tenant.TenantConfigurationService
+import es.bdo.skeleton.tenant.infrastructure.TenantConfigurationService
 import org.flywaydb.core.Flyway
 import org.springframework.boot.CommandLineRunner
 import org.springframework.stereotype.Component
@@ -10,7 +10,7 @@ class FlywayMultiTenantMigrator(
     private val tenantConfigService: TenantConfigurationService
 ) : CommandLineRunner {
 
-    private val tenantMigrationLocation = "classpath:db/migration/tenant"
+    private val migrationLocation = "classpath:db/migration/tenant"
 
     override fun run(vararg args: String) {
         val tenantDataSources = tenantConfigService.getAllActiveDataSources()
@@ -19,10 +19,10 @@ class FlywayMultiTenantMigrator(
             return
         }
 
-        tenantDataSources.forEach { (tenantId, tenantDataSource) ->
+        tenantDataSources.forEach { (_, tenantDataSource) ->
             Flyway.configure()
                 .dataSource(tenantDataSource)
-                .locations(tenantMigrationLocation)
+                .locations(migrationLocation)
                 .baselineOnMigrate(true)
                 .load()
                 .migrate()

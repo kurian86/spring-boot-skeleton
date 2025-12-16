@@ -1,9 +1,10 @@
 app:
   tenant:
     datasource:
+      url-template: jdbc:postgresql://localhost:5432/%s
       driver-class-name: org.postgresql.Driver
-      maximum-pool-size: 5
-      minimum-idle: 2
+      maximum-pool-size: 3
+      minimum-idle: 1
 
 spring:
   application:
@@ -17,8 +18,8 @@ spring:
 
     hikari:
       pool-name: Catalog-Pool
-      maximum-pool-size: 5
-      minimum-idle: 2
+      maximum-pool-size: 3
+      minimum-idle: 1
 
   sql:
     init:

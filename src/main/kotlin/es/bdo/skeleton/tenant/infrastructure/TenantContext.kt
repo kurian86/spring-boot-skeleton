@@ -1,4 +1,4 @@
-package es.bdo.skeleton.main.tenant
+package es.bdo.skeleton.tenant.infrastructure
 
 object TenantContext {
     private val currentTenant = ThreadLocal<String>()

@@ -1,4 +1,4 @@
-package es.bdo.skeleton.main.tenant
+package es.bdo.skeleton.tenant.infrastructure
 
 import org.springframework.jdbc.datasource.lookup.AbstractRoutingDataSource
 
