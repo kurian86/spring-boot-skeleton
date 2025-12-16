@@ -1,5 +1,7 @@
 app:
   tenant:
+    cache:
+      ttl-seconds: 300
     datasource:
       url-template: jdbc:postgresql://localhost:5432/%s
       driver-class-name: org.postgresql.Driver
@@ -9,6 +11,11 @@ app:
 spring:
   application:
     name: Spring Boot Skeleton
+
+  cache:
+    type: caffeine
+    caffeine:
+      spec: expireAfterWrite=300s,maximumSize=1000
 
   datasource:
     url: jdbc:postgresql://localhost:5432/catalog

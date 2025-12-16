@@ -1,7 +1,7 @@
 package es.bdo.skeleton.tenant.infrastructure
 
 import com.zaxxer.hikari.HikariDataSource
-import es.bdo.skeleton.tenant.domain.ITenantRepository
+import es.bdo.skeleton.tenant.application.TenantProvider
 import es.bdo.skeleton.tenant.domain.Tenant
 import es.bdo.skeleton.tenant.infrastructure.config.TenantProperties
 import org.springframework.stereotype.Service
@@ -10,13 +10,13 @@ import javax.sql.DataSource
 @Service
 class TenantConfigurationService(
     private val properties: TenantProperties,
-    private val repository: ITenantRepository
+    private val provider: TenantProvider
 ) {
 
     private val dataSources = mutableMapOf<String, DataSource>()
 
     fun loadAllTenants(): Map<String, DataSource> {
-        val tenants = repository.findAllActive()
+        val tenants = provider.findAllActive()
 
         tenants.forEach { tenant ->
             dataSources[tenant.id] = createDataSource(tenant)

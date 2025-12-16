@@ -11,4 +11,4 @@ CREATE TABLE tenants
 );
 
 INSERT INTO tenants (id, name, db_database, db_username, db_password, is_active)
-VALUES ('default', 'DEFAULT', 'default', 'user', 'password', TRUE);
+VALUES ('default', 'Default', 'default', 'user', 'password', TRUE);

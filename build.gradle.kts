@@ -40,6 +40,7 @@ extra["springModulithVersion"] = "2.0.0"
 
 dependencies {
 	implementation("org.springframework.boot:spring-boot-starter-data-jdbc")
+	implementation("org.springframework.boot:spring-boot-starter-cache")
 	implementation("org.springframework.boot:spring-boot-starter-flyway")
 	implementation("org.springframework.boot:spring-boot-starter-jooq")
 	implementation("org.springframework.boot:spring-boot-starter-webmvc")
@@ -49,6 +50,7 @@ dependencies {
 	implementation("org.springframework.modulith:spring-modulith-starter-jdbc")
 	implementation("tools.jackson.module:jackson-module-kotlin")
 	implementation("jakarta.xml.bind:jakarta.xml.bind-api")
+	implementation("com.github.ben-manes.caffeine:caffeine")
 	runtimeOnly("org.postgresql:postgresql")
 	runtimeOnly("com.sun.xml.bind:jaxb-impl")
 	annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
