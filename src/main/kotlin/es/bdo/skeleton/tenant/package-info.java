@@ -1,5 +1,5 @@
 @org.springframework.modulith.ApplicationModule(
-        displayName = "User Module",
+        displayName = "Tenant Module",
         type = org.springframework.modulith.ApplicationModule.Type.OPEN
 )
-package es.bdo.skeleton.user;
+package es.bdo.skeleton.tenant;

@@ -1,5 +1,5 @@
 package es.bdo.skeleton.user.domain
 
-interface UserRepository {
+interface IUserRepository {
     fun findAll(): List<User>
 }

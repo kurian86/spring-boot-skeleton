@@ -4,7 +4,7 @@ services:
     environment:
       POSTGRES_USER: user
       POSTGRES_PASSWORD: password
-      POSTGRES_DB: mydatabase
+      POSTGRES_DB: catalog
     volumes:
       - db_data:/var/lib/postgresql
     networks:
