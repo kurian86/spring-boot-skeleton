@@ -66,7 +66,6 @@ If you already have tenants with plaintext passwords:
 ### Error: "IllegalArgumentException: Invalid Base64"
 - The password in the DB is not Base64
 - It is probably plaintext
-- Encrypt the password using the CLI tool
 
 ### The application won't start
 - Make sure environment variables are configured
