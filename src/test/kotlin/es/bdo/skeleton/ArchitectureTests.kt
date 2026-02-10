@@ -14,17 +14,28 @@ class ArchitectureTests {
 
     @Test
     fun `Modules can only access other modules through application layer`() {
-        noClasses()
-            .that().resideInAPackage("..user..")
-            .should().dependOnClassesThat()
-            .resideInAnyPackage("..absence.domain..", "..absence.infrastructure..")
-            .check(classes)
-        
+        // Absence module restrictions
         noClasses()
             .that().resideInAPackage("..absence..")
             .should().dependOnClassesThat()
-            .resideInAnyPackage("..user.domain..", "..user.infrastructure..")
+            .resideInAnyPackage("..user.domain..", "..user.infrastructure..", "..tenant.domain..", "..tenant.infrastructure..")
             .check(classes)
+
+        // Tenant module restrictions
+        noClasses()
+            .that().resideInAPackage("..tenant..")
+            .should().dependOnClassesThat()
+            .resideInAnyPackage("..user.domain..", "..user.infrastructure..", "..absence.domain..", "..absence.infrastructure..")
+            .check(classes)
+
+        // User module restrictions
+        noClasses()
+            .that().resideInAPackage("..user..")
+            .should().dependOnClassesThat()
+            .resideInAnyPackage("..absence.domain..", "..absence.infrastructure..", "..tenant.domain..", "..tenant.infrastructure..")
+            .check(classes)
+
+        // Note: All modules can access shared.** without restrictions (shared kernel pattern)
     }
 
     @Test

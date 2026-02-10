@@ -1,13 +1,64 @@
+app:
+  security:
+    encryption:
+      master-key: ${ENCRYPTION_MASTER_KEY:change-this-in-production-use-env-var}
+      salt: ${ENCRYPTION_SALT:change-this-salt-in-production-use-env-var}
+  
+  tenant:
+    cache:
+      ttl-seconds: 60
+    datasource:
+      url-template: jdbc:postgresql://localhost:5432/%s
+      driver-class-name: org.postgresql.Driver
+      maximum-pool-size: 3
+      minimum-idle: 1
+
 spring:
   application:
     name: Spring Boot Skeleton
 
+  cache:
+    type: caffeine
+    caffeine:
+      spec: expireAfterWrite=60s,maximumSize=1000,recordStats
+
+  jpa:
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    hibernate:
+      ddl-auto: none
+      naming:
+        physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
+    properties:
+      hibernate:
+        format_sql: true
+        show_sql: true
+    open-in-view: false
+    show-sql: true
+
   datasource:
-    url: jdbc:postgresql://localhost:5432/mydatabase
+    url: jdbc:postgresql://localhost:5432/catalog
     username: user
     password: password
+    driver-class-name: org.postgresql.Driver
+
+    hikari:
+      pool-name: Catalog-Pool
+      maximum-pool-size: 3
+      minimum-idle: 1
+
+  sql:
+    init:
+      mode: never
 
   flyway:
     enabled: true
-    baseline-on-migrate: true
-    locations: classpath:/db/migration
+    locations: classpath:/db/migration/catalog
+
+  threads:
+    virtual:
+      enabled: true
+
+logging:
+  level:
+    org.springframework: DEBUG
+    es.bdo.skeleton: DEBUG

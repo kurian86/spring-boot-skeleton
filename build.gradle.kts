@@ -1,13 +1,15 @@
 plugins {
-	kotlin("jvm") version "2.3.0-RC3"
-	kotlin("plugin.spring") version "2.3.0-RC3"
-	id("org.springframework.boot") version "4.0.0"
+	kotlin("jvm") version "2.3.0"
+	kotlin("plugin.spring") version "2.3.0"
+	id("org.springframework.boot") version "4.0.2"
 	id("io.spring.dependency-management") version "1.1.7"
-	id("org.graalvm.buildtools.native") version "0.11.3"
+	id("org.hibernate.orm") version "7.2.1.Final"
+	id("org.graalvm.buildtools.native") version "0.11.4"
+	kotlin("plugin.jpa") version "2.3.0"
 }
 
 group = "es.bdo"
-version = "0.0.1-SNAPSHOT"
+version = "0.0.1"
 description = "Demo architecture for Spring Boot"
 
 java {
@@ -16,45 +18,38 @@ java {
 	}
 }
 
-configurations {
-	compileOnly {
-		extendsFrom(configurations.annotationProcessor.get())
-	}
-}
-
 repositories {
 	mavenCentral()
 }
 
-extra["springModulithVersion"] = "2.0.0"
+val springModulithVersion = project.properties["springModulithVersion"] as String
 
 dependencies {
-	implementation("org.springframework.boot:spring-boot-starter-data-jdbc")
+	implementation("org.springframework.boot:spring-boot-starter-cache")
+	implementation("org.springframework.boot:spring-boot-starter-data-jpa")
 	implementation("org.springframework.boot:spring-boot-starter-flyway")
-	implementation("org.springframework.boot:spring-boot-starter-jooq")
+	implementation("org.springframework.boot:spring-boot-starter-validation")
 	implementation("org.springframework.boot:spring-boot-starter-webmvc")
 	implementation("org.flywaydb:flyway-database-postgresql")
 	implementation("org.jetbrains.kotlin:kotlin-reflect")
 	implementation("org.springframework.modulith:spring-modulith-starter-core")
-	implementation("org.springframework.modulith:spring-modulith-starter-jdbc")
+	implementation("org.springframework.modulith:spring-modulith-starter-jpa")
 	implementation("tools.jackson.module:jackson-module-kotlin")
-	implementation("jakarta.xml.bind:jakarta.xml.bind-api")
+	implementation("com.github.ben-manes.caffeine:caffeine")
 	runtimeOnly("org.postgresql:postgresql")
-	runtimeOnly("com.sun.xml.bind:jaxb-impl")
-	annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
-	testImplementation("org.springframework.boot:spring-boot-starter-data-jdbc-test")
+	testImplementation("org.springframework.boot:spring-boot-starter-cache-test")
+	testImplementation("org.springframework.boot:spring-boot-starter-data-jpa-test")
 	testImplementation("org.springframework.boot:spring-boot-starter-flyway-test")
-	testImplementation("org.springframework.boot:spring-boot-starter-jooq-test")
+	testImplementation("org.springframework.boot:spring-boot-starter-validation-test")
 	testImplementation("org.springframework.boot:spring-boot-starter-webmvc-test")
 	testImplementation("org.jetbrains.kotlin:kotlin-test-junit5")
 	testImplementation("org.springframework.modulith:spring-modulith-starter-test")
-	testImplementation("com.tngtech.archunit:archunit-junit5:1.3.0")
 	testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
 
 dependencyManagement {
 	imports {
-		mavenBom("org.springframework.modulith:spring-modulith-bom:${property("springModulithVersion")}")
+		mavenBom("org.springframework.modulith:spring-modulith-bom:${springModulithVersion}")
 	}
 }
 
@@ -62,6 +57,18 @@ kotlin {
 	compilerOptions {
 		freeCompilerArgs.addAll("-Xjsr305=strict", "-Xannotation-default-target=param-property")
 	}
+}
+
+hibernate {
+	enhancement {
+		enableAssociationManagement = true
+	}
+}
+
+allOpen {
+	annotation("jakarta.persistence.Entity")
+	annotation("jakarta.persistence.MappedSuperclass")
+	annotation("jakarta.persistence.Embeddable")
 }
 
 tasks.withType<Test> {

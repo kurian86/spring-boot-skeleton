@@ -1,5 +1,5 @@
 package es.bdo.skeleton.absence.domain
 
-interface AbsenceRepository {
+interface IAbsenceRepository {
     fun findAll(): List<Absence>
 }
