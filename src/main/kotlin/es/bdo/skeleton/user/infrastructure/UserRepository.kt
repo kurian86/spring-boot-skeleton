@@ -2,24 +2,16 @@ package es.bdo.skeleton.user.infrastructure
 
 import es.bdo.skeleton.user.domain.IUserRepository
 import es.bdo.skeleton.user.domain.User
-import jooq.generated.tables.references.USERS
-import org.jooq.DSLContext
+import es.bdo.skeleton.user.infrastructure.model.toDomain
 import org.springframework.stereotype.Repository
 
 @Repository
 class UserRepository(
-    private val dsl: DSLContext
+    private val jpaRepository: UserJpaRepository
 ) : IUserRepository {
 
     override fun findAll(): List<User> {
-        return dsl.selectFrom(USERS)
-            .fetch()
-            .map { record ->
-                User(
-                    id = record.id,
-                    name = record.name,
-                    email = record.email
-                )
-            }
+        return jpaRepository.findAll()
+            .map { it.toDomain() }
     }
 }

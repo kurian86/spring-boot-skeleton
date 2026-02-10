@@ -2,15 +2,13 @@ package es.bdo.skeleton.tenant.infrastructure
 
 import es.bdo.skeleton.tenant.domain.ITenantRepository
 import es.bdo.skeleton.tenant.domain.Tenant
-import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.jdbc.core.RowMapper
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
-import org.springframework.stereotype.Service
+import org.springframework.stereotype.Repository
 
-@Service
+@Repository
 class TenantRepository(
-    @Qualifier("catalogJdbcTemplate")
-    private val jdbcTemplate: NamedParameterJdbcTemplate,
+    private val jdbcTemplate: NamedParameterJdbcTemplate
 ) : ITenantRepository {
 
     private val rowMapper = RowMapper { rs, _ ->
