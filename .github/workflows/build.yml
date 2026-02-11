@@ -19,11 +19,25 @@ jobs:
           distribution: 'graalvm'
           cache: 'gradle'
 
+      - name: Set up Docker
+        uses: docker/setup-docker-action@v4
+
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 
-      - name: Compile Application (native image)
-        run: ./gradlew nativeCompile
+      - name: Build Docker Image (Native)
+        run: ./gradlew bootBuildImage -PnativeImage=true
+
+      - name: Save Docker Image to File
+        run: |
+          docker save es.bdo/skeleton:0.0.1 | gzip > skeleton-native.tar.gz
+
+      - name: Upload Docker Image Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: docker-image-native
+          path: skeleton-native.tar.gz
+          retention-days: 7
 
       - name: Upload Compiled Artifacts
         uses: actions/upload-artifact@v4
