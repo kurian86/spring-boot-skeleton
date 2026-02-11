@@ -65,6 +65,10 @@ class TenantConfigurationService(
             driverClassName = properties.datasource.driverClassName
             maximumPoolSize = properties.datasource.maximumPoolSize
             minimumIdle = properties.datasource.minimumIdle
+            maxLifetime = properties.datasource.maxLifetime ?: 300000L
+            idleTimeout = properties.datasource.idleTimeout ?: 120000L
+            connectionTimeout = properties.datasource.connectionTimeout ?: 30000L
+            keepaliveTime = properties.datasource.keepaliveTime ?: 60000L
         }
     }
 

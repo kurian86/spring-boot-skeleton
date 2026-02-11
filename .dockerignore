@@ -1,0 +1,44 @@
+# Build outputs
+build/
+target/
+*.jar
+*.war
+
+# IDE
+.idea/
+.vscode/
+*.iml
+*.ipr
+*.iws
+
+# Gradle
+.gradle/
+gradle-app.setting
+
+# Git
+.git/
+.gitignore
+.gitattributes
+
+# Documentation
+*.md
+LICENSE
+
+# Docker
+Dockerfile
+compose.yml
+compose.full.yml
+.dockerignore
+
+# Test files
+**/test/
+**/*Test.kt
+**/*Test.java
+
+# Logs
+*.log
+logs/
+
+# OS
+.DS_Store
+Thumbs.db
