@@ -7,6 +7,11 @@ services:
       POSTGRES_DB: catalog
     volumes:
       - db_data:/var/lib/postgresql
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U user -d catalog" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
     networks:
       - backend
     ports:

@@ -1,0 +1,53 @@
+services:
+  db:
+    image: postgres:18.1-alpine
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: catalog
+    volumes:
+      - db_data:/var/lib/postgresql
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U user -d catalog" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - backend
+    ports:
+      - "5432:5432"
+    restart: unless-stopped
+
+  app:
+    image: es.bdo/skeleton:0.0.1
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      APP_TENANT_DATASOURCE_URL_TEMPLATE: jdbc:postgresql://db:5432/%s
+      APP_TENANT_DATASOURCE_USERNAME: user
+      APP_TENANT_DATASOURCE_PASSWORD: password
+      APP_TENANT_FLYWAY_LOCATIONS: filesystem:/workspace/migration/tenant
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/catalog
+      SPRING_DATASOURCE_USERNAME: user
+      SPRING_DATASOURCE_PASSWORD: password
+      SPRING_FLYWAY_LOCATIONS: filesystem:/workspace/migration/catalog
+    volumes:
+      - ./src/main/resources/db/migration:/workspace/migration:ro
+#    healthcheck:
+#      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:8080/actuator/health || exit 1"]
+#      interval: 30s
+#      timeout: 10s
+#      retries: 3
+#      start_period: 40s
+    networks:
+      - backend
+    ports:
+      - "8080:8080"
+    restart: unless-stopped
+
+volumes:
+  db_data:
+
+networks:
+  backend:
