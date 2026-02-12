@@ -6,8 +6,8 @@ import java.util.*
 data class OAuthProvider(
     val id: UUID,
     val tenantId: String,
-    val providerType: ProviderType,
-    val providerName: String,
+    val type: ProviderType,
+    val name: String,
     val clientId: String,
     val clientSecret: String,
     val issuer: String,
@@ -16,17 +16,11 @@ data class OAuthProvider(
     val userInfoUri: String?,
     val jwkSetUri: String,
     val scope: String?,
+    val isOpaque: Boolean,
     val isActive: Boolean,
     val createdAt: ZonedDateTime,
     val updatedAt: ZonedDateTime
 ) {
-
-    enum class ProviderType {
-        GITHUB,
-        GOOGLE,
-        AZURE,
-        CUSTOM
-    }
 
     fun getScopesList(): List<String> {
         return scope?.split(",")?.map { it.trim() }?.filter { it.isNotEmpty() } ?: emptyList()

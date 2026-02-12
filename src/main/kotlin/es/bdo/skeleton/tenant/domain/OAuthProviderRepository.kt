@@ -5,5 +5,5 @@ interface OAuthProviderRepository {
 
     fun findActiveByTenantId(tenantId: String): List<OAuthProvider>
 
-    fun findByTenantIdAndType(tenantId: String, providerType: OAuthProvider.ProviderType): OAuthProvider?
+    fun findByTenantIdAndType(tenantId: String, providerType: ProviderType): OAuthProvider?
 }
