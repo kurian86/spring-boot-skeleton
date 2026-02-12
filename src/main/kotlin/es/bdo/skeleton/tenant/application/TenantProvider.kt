@@ -1,26 +1,26 @@
 package es.bdo.skeleton.tenant.application
 
-import es.bdo.skeleton.tenant.domain.ITenantRepository
 import es.bdo.skeleton.tenant.domain.Tenant
+import es.bdo.skeleton.tenant.domain.TenantRepository
 import org.springframework.cache.annotation.CacheEvict
 import org.springframework.cache.annotation.Cacheable
 import org.springframework.stereotype.Service
 
 @Service
 class TenantProvider(
-    private val tenantRepository: ITenantRepository
+    private val tenantRepository: TenantRepository
 ) {
 
     fun findAllActive(): List<Tenant> {
         return tenantRepository.findAllActive()
     }
 
-    @Cacheable(value = ["tenants"], key = "#tenantId")
+    @Cacheable(value = ["tenants"], key = "#tenantId.hashCode()")
     fun findById(tenantId: String): Tenant? {
         return tenantRepository.findById(tenantId)
     }
 
-    @CacheEvict(value = ["tenants"], key = "#tenantId")
+    @CacheEvict(value = ["tenants"], key = "#tenantId.hashCode()")
     fun evictTenant(tenantId: String) {
     }
 

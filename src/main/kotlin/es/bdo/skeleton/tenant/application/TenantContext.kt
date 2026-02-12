@@ -1,7 +1,9 @@
 package es.bdo.skeleton.tenant.application
 
 object TenantContext {
-    private val currentTenant = ThreadLocal<String>()
+    const val DEFAULT_TENANT = "default"
+
+    private val currentTenant = InheritableThreadLocal<String>()
 
     var tenantId: String?
         get() = currentTenant.get()
