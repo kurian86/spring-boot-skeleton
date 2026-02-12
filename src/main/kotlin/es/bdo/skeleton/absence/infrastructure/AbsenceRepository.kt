@@ -1,7 +1,7 @@
 package es.bdo.skeleton.absence.infrastructure
 
 import es.bdo.skeleton.absence.domain.Absence
-import es.bdo.skeleton.absence.domain.IAbsenceRepository
+import es.bdo.skeleton.absence.domain.AbsenceRepository as IAbsenceRepository
 import es.bdo.skeleton.absence.infrastructure.model.toDomain
 import org.springframework.stereotype.Repository
 

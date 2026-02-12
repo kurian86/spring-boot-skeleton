@@ -1,6 +1,6 @@
 package es.bdo.skeleton.tenant.application
 
-import es.bdo.skeleton.tenant.domain.ITenantRepository
+import es.bdo.skeleton.tenant.domain.TenantRepository
 import es.bdo.skeleton.tenant.domain.Tenant
 import org.springframework.cache.annotation.CacheEvict
 import org.springframework.cache.annotation.Cacheable
@@ -8,7 +8,7 @@ import org.springframework.stereotype.Service
 
 @Service
 class TenantProvider(
-    private val tenantRepository: ITenantRepository
+    private val tenantRepository: TenantRepository
 ) {
 
     fun findAllActive(): List<Tenant> {

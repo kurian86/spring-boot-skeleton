@@ -1,6 +1,6 @@
 package es.bdo.skeleton.user.infrastructure
 
-import es.bdo.skeleton.user.domain.IUserRepository
+import es.bdo.skeleton.user.domain.UserRepository as IUserRepository
 import es.bdo.skeleton.user.domain.User
 import es.bdo.skeleton.user.infrastructure.model.toDomain
 import org.springframework.stereotype.Repository

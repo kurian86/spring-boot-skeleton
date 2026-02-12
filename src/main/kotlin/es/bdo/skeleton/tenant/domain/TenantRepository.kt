@@ -1,6 +1,6 @@
 package es.bdo.skeleton.tenant.domain
 
-interface ITenantRepository {
+interface TenantRepository {
     fun findAllActive(): List<Tenant>
 
     fun findById(id: String): Tenant?

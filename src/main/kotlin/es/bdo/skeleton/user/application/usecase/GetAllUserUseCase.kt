@@ -1,14 +1,14 @@
 package es.bdo.skeleton.user.application.usecase
 
-import es.bdo.skeleton.user.domain.IUserRepository
+import es.bdo.skeleton.user.application.UserProvider
 import es.bdo.skeleton.user.domain.User
 import org.springframework.stereotype.Service
 
 @Service
 class GetAllUserUseCase(
-    private val repository: IUserRepository
+    private val provider: UserProvider,
 ) {
     fun handle(): List<User> {
-        return repository.findAll()
+        return provider.findAll()
     }
 }
