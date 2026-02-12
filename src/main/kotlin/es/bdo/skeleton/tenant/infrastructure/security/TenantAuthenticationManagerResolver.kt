@@ -12,7 +12,7 @@ import org.springframework.security.oauth2.jwt.JwtDecoder
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationProvider
 import org.springframework.security.oauth2.server.resource.introspection.OpaqueTokenIntrospector
 
-class TenantAwareAuthenticationManagerResolver(
+class TenantAuthenticationManagerResolver(
     private val jwtDecoder: JwtDecoder,
     private val authenticationConverter: Converter<Jwt, AbstractAuthenticationToken>,
     private val opaqueTokenIntrospector: OpaqueTokenIntrospector

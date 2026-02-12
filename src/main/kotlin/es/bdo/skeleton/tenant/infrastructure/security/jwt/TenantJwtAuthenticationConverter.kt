@@ -7,7 +7,7 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority
 import org.springframework.security.oauth2.jwt.Jwt
 import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter
 
-class TenantAuthenticationConverter(
+class TenantJwtAuthenticationConverter(
     private val userInfoExtractorService: UserInfoExtractorService,
     private val grantedAuthoritiesConverter: JwtGrantedAuthoritiesConverter = JwtGrantedAuthoritiesConverter(),
 ) : Converter<Jwt, AbstractAuthenticationToken> {
@@ -16,7 +16,7 @@ class TenantAuthenticationConverter(
         val userInfo = extractUserInfo(jwt)
         val authorities = extractAuthorities(jwt)
 
-        return TenantAwareAuthenticationToken(jwt, authorities, userInfo)
+        return TenantJwtAuthenticationToken(jwt, authorities, userInfo)
     }
 
     private fun extractUserInfo(jwt: Jwt) = userInfoExtractorService.extractUserInfo(jwt)
