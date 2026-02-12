@@ -83,7 +83,8 @@ tasks.named<org.springframework.boot.gradle.tasks.bundling.BootBuildImage>("boot
     val isNativeImage = project.hasProperty("nativeImage") && project.property("nativeImage") == "true"
 
     if (isNativeImage) {
-        builder.set("paketobuildpacks/builder-jammy-tiny:latest")
+        builder.set("paketobuildpacks/builder-jammy-base:latest")
+        runImage.set("paketobuildpacks/run-jammy-base:latest")
         environment.set(
             mapOf(
                 "BP_NATIVE_IMAGE" to "true",
