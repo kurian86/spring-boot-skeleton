@@ -9,7 +9,7 @@ import org.springframework.security.oauth2.server.resource.authentication.Bearer
 import org.springframework.security.oauth2.server.resource.authentication.OpaqueTokenAuthenticationProvider
 import org.springframework.security.oauth2.server.resource.introspection.OpaqueTokenIntrospector
 
-class TenantAwareOpaqueTokenAuthenticationProvider(
+class TenantOpaqueAuthenticationProvider(
     introspector: OpaqueTokenIntrospector
 ) : AuthenticationProvider {
 
@@ -22,16 +22,9 @@ class TenantAwareOpaqueTokenAuthenticationProvider(
         val oauth2Principal = authResult.principal as? OAuth2AuthenticatedPrincipal
             ?: throw IllegalStateException("Unexpected principal type")
 
-        val attributes = oauth2Principal.attributes
-        val userInfo = UserInfo(
-            attributes["sub"] as? String ?: "",
-            attributes["preferred_username"] as? String ?: "",
-            attributes["email"] as? String ?: "",
-            attributes["iss"] as? String ?: "",
-            attributes
-        )
+        val userInfo = UserInfo.fromAttributes(oauth2Principal.attributes)
 
-        return TenantAwareOpaqueAuthenticationToken(
+        return TenantOpaqueAuthenticationToken(
             authentication as BearerTokenAuthenticationToken,
             oauth2Principal,
             authResult.authorities + SimpleGrantedAuthority("ROLE_USER"),

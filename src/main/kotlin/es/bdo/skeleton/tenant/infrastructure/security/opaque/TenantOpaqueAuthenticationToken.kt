@@ -5,7 +5,7 @@ import org.springframework.security.core.GrantedAuthority
 import org.springframework.security.oauth2.core.OAuth2AuthenticatedPrincipal
 import org.springframework.security.oauth2.server.resource.authentication.BearerTokenAuthenticationToken
 
-class TenantAwareOpaqueAuthenticationToken(
+class TenantOpaqueAuthenticationToken(
     token: BearerTokenAuthenticationToken,
     private val oauth2Principal: OAuth2AuthenticatedPrincipal,
     private val tokenAuthorities: Collection<GrantedAuthority>,
@@ -26,6 +26,6 @@ class TenantAwareOpaqueAuthenticationToken(
     override fun getDetails(): Any? = oauth2Principal.attributes
 
     override fun toString(): String {
-        return "TenantAwareOpaqueAuthenticationToken(userInfo=$userInfo, authorities=${tokenAuthorities})"
+        return "TenantOpaqueAuthenticationToken(userInfo=$userInfo, authorities=$tokenAuthorities)"
     }
 }

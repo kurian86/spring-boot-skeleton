@@ -7,11 +7,11 @@ import org.springframework.security.oauth2.server.resource.introspection.OAuth2I
 import org.springframework.web.client.RestClient
 import org.springframework.web.client.RestClientException
 
-class GitHubOpaqueTokenIntrospector : TenantOpaqueTokenIntrospector {
+class GitHubOpaqueTokenIntrospector : OpaqueTokenIntrospector {
 
     companion object {
         private const val API_BASE = "https://api.github.com"
-        private val ISSUERS = setOf("github", "github.com")
+        private val SUPPORTED_ISSUERS = setOf("github", "github.com")
     }
 
     private val restClient = RestClient.builder()
@@ -19,7 +19,7 @@ class GitHubOpaqueTokenIntrospector : TenantOpaqueTokenIntrospector {
         .build()
 
     override fun supports(issuer: String): Boolean {
-        return ISSUERS.any { issuer.contains(it, ignoreCase = true) }
+        return SUPPORTED_ISSUERS.any { issuer.contains(it, ignoreCase = true) }
     }
 
     override fun introspect(token: String): OAuth2AuthenticatedPrincipal {

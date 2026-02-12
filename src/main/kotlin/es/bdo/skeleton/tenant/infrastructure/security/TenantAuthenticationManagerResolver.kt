@@ -1,6 +1,6 @@
 package es.bdo.skeleton.tenant.infrastructure.security
 
-import es.bdo.skeleton.tenant.infrastructure.security.opaque.TenantAwareOpaqueTokenAuthenticationProvider
+import es.bdo.skeleton.tenant.infrastructure.security.opaque.TenantOpaqueAuthenticationProvider
 import jakarta.servlet.http.HttpServletRequest
 import org.springframework.core.convert.converter.Converter
 import org.springframework.security.authentication.AbstractAuthenticationToken
@@ -14,18 +14,18 @@ import org.springframework.security.oauth2.server.resource.introspection.OpaqueT
 
 class TenantAuthenticationManagerResolver(
     private val jwtDecoder: JwtDecoder,
-    private val authenticationConverter: Converter<Jwt, AbstractAuthenticationToken>,
+    private val jwtAuthenticationConverter: Converter<Jwt, AbstractAuthenticationToken>,
     private val opaqueTokenIntrospector: OpaqueTokenIntrospector
 ) : AuthenticationManagerResolver<HttpServletRequest> {
 
     private val jwtAuthenticationManager: AuthenticationManager by lazy {
-        val jwtAuthenticationProvider = JwtAuthenticationProvider(jwtDecoder)
-        jwtAuthenticationProvider.setJwtAuthenticationConverter(authenticationConverter)
-        ProviderManager(jwtAuthenticationProvider)
+        val provider = JwtAuthenticationProvider(jwtDecoder)
+        provider.setJwtAuthenticationConverter(jwtAuthenticationConverter)
+        ProviderManager(provider)
     }
 
     private val opaqueAuthenticationManager: AuthenticationManager by lazy {
-        ProviderManager(TenantAwareOpaqueTokenAuthenticationProvider(opaqueTokenIntrospector))
+        ProviderManager(TenantOpaqueAuthenticationProvider(opaqueTokenIntrospector))
     }
 
     override fun resolve(request: HttpServletRequest): AuthenticationManager {
@@ -45,11 +45,7 @@ class TenantAuthenticationManagerResolver(
     }
 
     private fun isJwtToken(token: String): Boolean {
-        return try {
-            val parts = token.split(".")
-            parts.size == 3 && parts.all { it.isNotBlank() }
-        } catch (e: Exception) {
-            false
-        }
+        val parts = token.split(".")
+        return parts.size == 3 && parts.all { it.isNotBlank() }
     }
 }

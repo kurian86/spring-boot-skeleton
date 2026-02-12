@@ -14,7 +14,7 @@ import org.springframework.web.client.RestTemplate
 import java.time.Duration
 import java.util.concurrent.ConcurrentHashMap
 
-class MultiTenantJwtDecoder(
+class TenantJwtDecoder(
     private val oauthProviderRepository: OAuthProviderRepository,
     private val restOperations: RestOperations = createDefaultRestOperations()
 ) : JwtDecoder {
@@ -29,30 +29,30 @@ class MultiTenantJwtDecoder(
         }
     }
 
-    private val jwtDecoderCache = ConcurrentHashMap<String, JwtDecoder>()
+    private val decoderCache = ConcurrentHashMap<String, JwtDecoder>()
 
     override fun decode(token: String): Jwt {
-        val currentTenantId = TenantContext.tenantId
+        val tenantId = TenantContext.tenantId
             ?: throw IllegalStateException("No tenant context available")
 
-        val unverifiedJwt = decodeJwtWithoutVerification(token)
+        val unverifiedJwt = parseWithoutVerification(token)
         val issuer = unverifiedJwt.issuer?.toString()
             ?: throw IllegalArgumentException("JWT does not contain issuer claim")
 
-        val provider = findProviderForIssuer(currentTenantId, issuer)
+        val provider = findProviderForIssuer(tenantId, issuer)
             ?: throw IllegalStateException(
-                "No OAuth provider found for tenant '$currentTenantId' and issuer '$issuer'"
+                "No OAuth provider found for tenant '$tenantId' and issuer '$issuer'"
             )
 
-        val cacheKey = buildCacheKey(currentTenantId, provider)
-        val decoder = jwtDecoderCache.computeIfAbsent(cacheKey) {
+        val cacheKey = "$tenantId:${provider.providerType}"
+        val decoder = decoderCache.computeIfAbsent(cacheKey) {
             createDecoderForProvider(provider)
         }
 
         return decoder.decode(token)
     }
 
-    private fun decodeJwtWithoutVerification(token: String): Jwt {
+    private fun parseWithoutVerification(token: String): Jwt {
         val parsedJwt = JWTParser.parse(token)
         val claims = parsedJwt.jwtClaimsSet
 
@@ -72,12 +72,10 @@ class MultiTenantJwtDecoder(
             }
     }
 
-    private fun buildCacheKey(tenantId: String, provider: OAuthProvider): String {
-        return "$tenantId:${provider.providerType}"
-    }
-
     private fun createDecoderForProvider(provider: OAuthProvider): JwtDecoder {
-        validateProviderConfiguration(provider)
+        require(provider.isConfigured()) {
+            "OAuth provider '${provider.providerName}' for tenant '${provider.tenantId}' is not properly configured"
+        }
 
         return NimbusJwtDecoder.withJwkSetUri(provider.jwkSetUri)
             .restOperations(restOperations)
@@ -85,13 +83,5 @@ class MultiTenantJwtDecoder(
             .apply {
                 setJwtValidator(JwtValidators.createDefaultWithIssuer(provider.issuer))
             }
-    }
-
-    private fun validateProviderConfiguration(provider: OAuthProvider) {
-        if (!provider.isConfigured()) {
-            throw IllegalStateException(
-                "OAuth provider '${provider.providerName}' for tenant '${provider.tenantId}' is not properly configured"
-            )
-        }
     }
 }

@@ -2,11 +2,11 @@ package es.bdo.skeleton.tenant.infrastructure.security.opaque
 
 import org.springframework.cache.annotation.Cacheable
 import org.springframework.security.oauth2.core.OAuth2AuthenticatedPrincipal
-import org.springframework.stereotype.Service
+import org.springframework.stereotype.Component
 
-@Service
-class OpaqueTokenIntrospectionService(
-    private val introspectorFactory: OpaqueTokenIntrospectorFactory
+@Component
+class OpaqueTokenIntrospectorResolver(
+    private val introspectors: List<OpaqueTokenIntrospector> = listOf(GitHubOpaqueTokenIntrospector())
 ) {
 
     @Cacheable(
@@ -15,6 +15,8 @@ class OpaqueTokenIntrospectionService(
         unless = "#result == null"
     )
     fun introspect(token: String, issuer: String): OAuth2AuthenticatedPrincipal {
-        return introspectorFactory.introspect(token, issuer)
+        val introspector = introspectors.find { it.supports(issuer) }
+            ?: throw IllegalArgumentException("No introspector found for issuer: $issuer")
+        return introspector.introspect(token)
     }
 }

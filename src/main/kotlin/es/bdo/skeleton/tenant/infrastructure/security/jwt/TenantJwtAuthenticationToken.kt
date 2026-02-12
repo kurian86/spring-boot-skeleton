@@ -18,6 +18,6 @@ class TenantJwtAuthenticationToken(
     override fun getPrincipal(): UserInfo = userInfo
 
     override fun toString(): String {
-        return "TenantAwareAuthenticationToken(userInfo=$userInfo, authorities=${authorities})"
+        return "TenantJwtAuthenticationToken(userInfo=$userInfo, authorities=$authorities)"
     }
 }

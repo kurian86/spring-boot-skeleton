@@ -3,11 +3,11 @@ package es.bdo.skeleton.tenant.infrastructure.config
 import es.bdo.skeleton.tenant.domain.OAuthProviderRepository
 import es.bdo.skeleton.tenant.infrastructure.security.TenantAuthenticationManagerResolver
 import es.bdo.skeleton.tenant.infrastructure.security.TenantContextFilter
-import es.bdo.skeleton.tenant.infrastructure.security.jwt.MultiTenantJwtDecoder
 import es.bdo.skeleton.tenant.infrastructure.security.jwt.TenantJwtAuthenticationConverter
-import es.bdo.skeleton.tenant.infrastructure.security.jwt.UserInfoExtractorService
-import es.bdo.skeleton.tenant.infrastructure.security.opaque.OpaqueTokenIntrospectionService
-import es.bdo.skeleton.tenant.infrastructure.security.opaque.TenantAwareOpaqueTokenIntrospector
+import es.bdo.skeleton.tenant.infrastructure.security.jwt.TenantJwtDecoder
+import es.bdo.skeleton.tenant.infrastructure.security.jwt.UserInfoExtractorResolver
+import es.bdo.skeleton.tenant.infrastructure.security.opaque.OpaqueTokenIntrospectorResolver
+import es.bdo.skeleton.tenant.infrastructure.security.opaque.TenantOpaqueTokenIntrospector
 import jakarta.servlet.http.HttpServletRequest
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
@@ -49,13 +49,13 @@ class SecurityConfig {
     @Bean
     fun authenticationManagerResolver(
         oauthProviderRepository: OAuthProviderRepository,
-        userInfoExtractorService: UserInfoExtractorService,
-        introspectionService: OpaqueTokenIntrospectionService
+        userInfoExtractorResolver: UserInfoExtractorResolver,
+        opaqueTokenIntrospectorResolver: OpaqueTokenIntrospectorResolver
     ): AuthenticationManagerResolver<HttpServletRequest> {
         return TenantAuthenticationManagerResolver(
-            MultiTenantJwtDecoder(oauthProviderRepository),
-            TenantJwtAuthenticationConverter(userInfoExtractorService),
-            TenantAwareOpaqueTokenIntrospector(oauthProviderRepository, introspectionService)
+            TenantJwtDecoder(oauthProviderRepository),
+            TenantJwtAuthenticationConverter(userInfoExtractorResolver),
+            TenantOpaqueTokenIntrospector(oauthProviderRepository, opaqueTokenIntrospectorResolver)
         )
     }
 }
