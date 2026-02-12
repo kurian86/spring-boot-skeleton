@@ -11,7 +11,7 @@ class OpaqueTokenIntrospectorResolver(
 
     @Cacheable(
         value = ["opaqueTokens"],
-        key = "#issuer.hashCode() + '-' + #token.hashCode()",
+        key = "#issuer + ':' + #token.hashCode()",
         unless = "#result == null"
     )
     fun introspect(issuer: String, token: String): OAuth2AuthenticatedPrincipal {

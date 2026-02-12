@@ -31,7 +31,7 @@ class GitHubOpaqueTokenIntrospector : OpaqueTokenIntrospector {
                 "sub" to user.login,
                 "preferred_username" to user.login,
                 "email" to (user.email ?: ""),
-                "iss" to "https://github.com",
+                "iss" to ISSUER,
                 "id" to user.id
             )
 
