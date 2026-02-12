@@ -1,11 +1,11 @@
 package es.bdo.skeleton.tenant.infrastructure.security.jwt
 
+import org.springframework.stereotype.Component
+
+@Component
 class AuthorityExtractorFactory(
-    private val extractors: List<AuthorityExtractor>
+    private val extractors: List<AuthorityExtractor> = defaultExtractors()
 ) {
-
-    constructor() : this(defaultExtractors())
-
     companion object {
         fun defaultExtractors(): List<AuthorityExtractor> {
             return listOf(

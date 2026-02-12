@@ -6,11 +6,10 @@ import org.springframework.security.authentication.AbstractAuthenticationToken
 import org.springframework.security.core.GrantedAuthority
 import org.springframework.security.oauth2.jwt.Jwt
 import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter
-import org.springframework.stereotype.Component
 
-@Component
 class TenantAuthenticationConverter(
-    private val grantedAuthoritiesConverter: JwtGrantedAuthoritiesConverter = JwtGrantedAuthoritiesConverter()
+    private val authorityExtractorService: AuthorityExtractorService,
+    private val grantedAuthoritiesConverter: JwtGrantedAuthoritiesConverter = JwtGrantedAuthoritiesConverter(),
 ) : Converter<Jwt, AbstractAuthenticationToken> {
 
     override fun convert(jwt: Jwt): AbstractAuthenticationToken {
@@ -25,10 +24,7 @@ class TenantAuthenticationConverter(
         val authorities = mutableSetOf<GrantedAuthority>()
 
         authorities.addAll(grantedAuthoritiesConverter.convert(jwt) ?: emptySet())
-
-        val issuer = jwt.issuer?.toString() ?: ""
-        val extractor = AuthorityExtractorFactory().getExtractor(issuer)
-        authorities.addAll(extractor.extract(jwt))
+        authorities.addAll(authorityExtractorService.extractAuthorities(jwt))
 
         return authorities
     }

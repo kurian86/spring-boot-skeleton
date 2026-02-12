@@ -1,10 +1,12 @@
 package es.bdo.skeleton.tenant.infrastructure.security
 
-import es.bdo.skeleton.tenant.infrastructure.security.jwt.TenantAuthenticationConverter
 import jakarta.servlet.http.HttpServletRequest
+import org.springframework.core.convert.converter.Converter
+import org.springframework.security.authentication.AbstractAuthenticationToken
 import org.springframework.security.authentication.AuthenticationManager
 import org.springframework.security.authentication.AuthenticationManagerResolver
 import org.springframework.security.authentication.ProviderManager
+import org.springframework.security.oauth2.jwt.Jwt
 import org.springframework.security.oauth2.jwt.JwtDecoder
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationProvider
 import org.springframework.security.oauth2.server.resource.authentication.OpaqueTokenAuthenticationProvider
@@ -12,12 +14,13 @@ import org.springframework.security.oauth2.server.resource.introspection.OpaqueT
 
 class TenantAwareAuthenticationManagerResolver(
     private val jwtDecoder: JwtDecoder,
+    private val authenticationConverter: Converter<Jwt, AbstractAuthenticationToken>,
     private val opaqueTokenIntrospector: OpaqueTokenIntrospector
 ) : AuthenticationManagerResolver<HttpServletRequest> {
 
     private val jwtAuthenticationManager: AuthenticationManager by lazy {
         val jwtAuthenticationProvider = JwtAuthenticationProvider(jwtDecoder)
-        jwtAuthenticationProvider.setJwtAuthenticationConverter(TenantAuthenticationConverter())
+        jwtAuthenticationProvider.setJwtAuthenticationConverter(authenticationConverter)
         ProviderManager(jwtAuthenticationProvider)
     }
 

@@ -15,12 +15,12 @@ class TenantProvider(
         return tenantRepository.findAllActive()
     }
 
-    @Cacheable(value = ["tenants"], key = "#tenantId")
+    @Cacheable(value = ["tenants"], key = "#tenantId.hashCode()")
     fun findById(tenantId: String): Tenant? {
         return tenantRepository.findById(tenantId)
     }
 
-    @CacheEvict(value = ["tenants"], key = "#tenantId")
+    @CacheEvict(value = ["tenants"], key = "#tenantId.hashCode()")
     fun evictTenant(tenantId: String) {
     }
 
