@@ -11,15 +11,15 @@ class GitHubOpaqueTokenIntrospector : OpaqueTokenIntrospector {
 
     companion object {
         private const val API_BASE = "https://api.github.com"
-        private val SUPPORTED_ISSUERS = setOf("github", "github.com")
+        private val GITHUB_TOKEN_PREFIXES = setOf("ghp_", "gho_", "ghu_", "ghs_", "ghr_")
     }
 
     private val restClient = RestClient.builder()
         .baseUrl(API_BASE)
         .build()
 
-    override fun supports(issuer: String): Boolean {
-        return SUPPORTED_ISSUERS.any { issuer.contains(it, ignoreCase = true) }
+    override fun supports(token: String): Boolean {
+        return GITHUB_TOKEN_PREFIXES.any { token.startsWith(it) }
     }
 
     override fun introspect(token: String): OAuth2AuthenticatedPrincipal {

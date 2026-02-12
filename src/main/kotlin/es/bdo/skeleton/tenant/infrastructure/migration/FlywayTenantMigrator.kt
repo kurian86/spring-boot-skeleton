@@ -7,7 +7,7 @@ import org.springframework.boot.CommandLineRunner
 import org.springframework.stereotype.Component
 
 @Component
-class FlywayMultiTenantMigrator(
+class FlywayTenantMigrator(
     private val properties: TenantProperties,
     private val tenantConfigService: TenantConfigurationService
 ) : CommandLineRunner {

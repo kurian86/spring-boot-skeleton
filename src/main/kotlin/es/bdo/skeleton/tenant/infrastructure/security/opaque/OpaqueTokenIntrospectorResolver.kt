@@ -11,12 +11,12 @@ class OpaqueTokenIntrospectorResolver(
 
     @Cacheable(
         value = ["opaqueTokens"],
-        key = "#token.hashCode() + '-' + #issuer.hashCode()",
+        key = "#token.hashCode()",
         unless = "#result == null"
     )
-    fun introspect(token: String, issuer: String): OAuth2AuthenticatedPrincipal {
-        val introspector = introspectors.find { it.supports(issuer) }
-            ?: throw IllegalArgumentException("No introspector found for issuer: $issuer")
+    fun introspect(token: String): OAuth2AuthenticatedPrincipal {
+        val introspector = introspectors.find { it.supports(token) }
+            ?: throw IllegalArgumentException("No introspector found for token. Token does not match any known format.")
         return introspector.introspect(token)
     }
 }

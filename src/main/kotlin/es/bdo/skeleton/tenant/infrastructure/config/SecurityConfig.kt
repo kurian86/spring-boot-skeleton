@@ -55,7 +55,7 @@ class SecurityConfig {
         return TenantAuthenticationManagerResolver(
             TenantJwtDecoder(oauthProviderRepository),
             TenantJwtAuthenticationConverter(userInfoExtractorResolver),
-            TenantOpaqueTokenIntrospector(oauthProviderRepository, opaqueTokenIntrospectorResolver)
+            TenantOpaqueTokenIntrospector(opaqueTokenIntrospectorResolver)
         )
     }
 }
