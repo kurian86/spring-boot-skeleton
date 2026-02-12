@@ -28,10 +28,10 @@ class GitHubOpaqueTokenIntrospector : TenantOpaqueTokenIntrospector {
 
             val attributes = mapOf<String, Any>(
                 "sub" to user.login,
-                "login" to user.login,
-                "id" to user.id,
+                "preferred_username" to user.login,
                 "email" to (user.email ?: ""),
-                "iss" to "https://github.com"
+                "iss" to "https://github.com",
+                "id" to user.id
             )
 
             return OAuth2IntrospectionAuthenticatedPrincipal(
@@ -59,8 +59,8 @@ class GitHubOpaqueTokenIntrospector : TenantOpaqueTokenIntrospector {
     }
 
     data class GitHubUserResponse(
-        val login: String,
         val id: Long,
+        val login: String,
         val email: String? = null
     )
 }

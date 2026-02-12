@@ -1,10 +1,10 @@
 package es.bdo.skeleton.tenant.infrastructure
 
-import es.bdo.skeleton.tenant.domain.TenantRepository as ITenantRepository
 import es.bdo.skeleton.tenant.domain.Tenant
 import org.springframework.jdbc.core.RowMapper
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import org.springframework.stereotype.Repository
+import es.bdo.skeleton.tenant.domain.TenantRepository as ITenantRepository
 
 @Repository
 class TenantRepository(

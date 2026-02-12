@@ -1,7 +1,7 @@
 package es.bdo.skeleton.tenant.application
 
-import es.bdo.skeleton.tenant.domain.TenantRepository
 import es.bdo.skeleton.tenant.domain.Tenant
+import es.bdo.skeleton.tenant.domain.TenantRepository
 import org.springframework.cache.annotation.CacheEvict
 import org.springframework.cache.annotation.Cacheable
 import org.springframework.stereotype.Service

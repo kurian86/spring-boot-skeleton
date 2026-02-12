@@ -1,5 +1,6 @@
 package es.bdo.skeleton.tenant.infrastructure.security
 
+import es.bdo.skeleton.tenant.infrastructure.security.opaque.TenantAwareOpaqueTokenAuthenticationProvider
 import jakarta.servlet.http.HttpServletRequest
 import org.springframework.core.convert.converter.Converter
 import org.springframework.security.authentication.AbstractAuthenticationToken
@@ -9,7 +10,6 @@ import org.springframework.security.authentication.ProviderManager
 import org.springframework.security.oauth2.jwt.Jwt
 import org.springframework.security.oauth2.jwt.JwtDecoder
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationProvider
-import org.springframework.security.oauth2.server.resource.authentication.OpaqueTokenAuthenticationProvider
 import org.springframework.security.oauth2.server.resource.introspection.OpaqueTokenIntrospector
 
 class TenantAwareAuthenticationManagerResolver(
@@ -25,7 +25,7 @@ class TenantAwareAuthenticationManagerResolver(
     }
 
     private val opaqueAuthenticationManager: AuthenticationManager by lazy {
-        ProviderManager(OpaqueTokenAuthenticationProvider(opaqueTokenIntrospector))
+        ProviderManager(TenantAwareOpaqueTokenAuthenticationProvider(opaqueTokenIntrospector))
     }
 
     override fun resolve(request: HttpServletRequest): AuthenticationManager {

@@ -1,5 +1,6 @@
 package es.bdo.skeleton.tenant.infrastructure.security.jwt
 
+import es.bdo.skeleton.tenant.infrastructure.security.UserInfo
 import org.springframework.security.core.GrantedAuthority
 import org.springframework.security.oauth2.jwt.Jwt
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken
@@ -7,27 +8,16 @@ import org.springframework.security.oauth2.server.resource.authentication.JwtAut
 class TenantAwareAuthenticationToken(
     jwt: Jwt,
     authorities: Collection<GrantedAuthority>,
-    val tenantId: String
+    val userInfo: UserInfo
 ) : JwtAuthenticationToken(jwt, authorities) {
-
-    private val principalName: String = extractPrincipal(jwt)
 
     init {
         super.setAuthenticated(true)
     }
 
-    private fun extractPrincipal(jwt: Jwt): String {
-        return jwt.getClaimAsString("preferred_username")
-            ?: jwt.getClaimAsString("login")
-            ?: jwt.getClaimAsString("email")
-            ?: jwt.getClaimAsString("upn")
-            ?: jwt.getClaimAsString("sub")
-            ?: "unknown"
-    }
-
-    override fun getPrincipal(): String = principalName
+    override fun getPrincipal(): UserInfo = userInfo
 
     override fun toString(): String {
-        return "TenantAwareAuthenticationToken(tenantId=$tenantId, principal=$principalName, authorities=${authorities})"
+        return "TenantAwareAuthenticationToken(userInfo=$userInfo, authorities=${authorities})"
     }
 }

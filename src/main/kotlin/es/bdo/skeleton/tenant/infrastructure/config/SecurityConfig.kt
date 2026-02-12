@@ -3,9 +3,9 @@ package es.bdo.skeleton.tenant.infrastructure.config
 import es.bdo.skeleton.tenant.domain.OAuthProviderRepository
 import es.bdo.skeleton.tenant.infrastructure.security.TenantAwareAuthenticationManagerResolver
 import es.bdo.skeleton.tenant.infrastructure.security.TenantContextFilter
-import es.bdo.skeleton.tenant.infrastructure.security.jwt.AuthorityExtractorService
 import es.bdo.skeleton.tenant.infrastructure.security.jwt.MultiTenantJwtDecoder
 import es.bdo.skeleton.tenant.infrastructure.security.jwt.TenantAuthenticationConverter
+import es.bdo.skeleton.tenant.infrastructure.security.jwt.UserInfoExtractorService
 import es.bdo.skeleton.tenant.infrastructure.security.opaque.OpaqueTokenIntrospectionService
 import es.bdo.skeleton.tenant.infrastructure.security.opaque.TenantAwareOpaqueTokenIntrospector
 import jakarta.servlet.http.HttpServletRequest
@@ -49,12 +49,12 @@ class SecurityConfig {
     @Bean
     fun authenticationManagerResolver(
         oauthProviderRepository: OAuthProviderRepository,
-        authorityExtractorService: AuthorityExtractorService,
+        userInfoExtractorService: UserInfoExtractorService,
         introspectionService: OpaqueTokenIntrospectionService
     ): AuthenticationManagerResolver<HttpServletRequest> {
         return TenantAwareAuthenticationManagerResolver(
             MultiTenantJwtDecoder(oauthProviderRepository),
-            TenantAuthenticationConverter(authorityExtractorService),
+            TenantAuthenticationConverter(userInfoExtractorService),
             TenantAwareOpaqueTokenIntrospector(oauthProviderRepository, introspectionService)
         )
     }

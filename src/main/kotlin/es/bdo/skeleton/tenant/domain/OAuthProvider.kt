@@ -1,7 +1,7 @@
 package es.bdo.skeleton.tenant.domain
 
 import java.time.ZonedDateTime
-import java.util.UUID
+import java.util.*
 
 data class OAuthProvider(
     val id: UUID,
