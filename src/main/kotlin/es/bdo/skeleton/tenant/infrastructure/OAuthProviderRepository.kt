@@ -1,7 +1,6 @@
 package es.bdo.skeleton.tenant.infrastructure
 
 import es.bdo.skeleton.tenant.domain.OAuthProvider
-import es.bdo.skeleton.tenant.domain.ProviderType
 import org.springframework.jdbc.core.RowMapper
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import org.springframework.stereotype.Repository
@@ -17,7 +16,6 @@ class OAuthProviderRepository(
         OAuthProvider(
             id = UUID.fromString(rs.getString("id")),
             tenantId = rs.getString("tenant_id"),
-            type = ProviderType.valueOf(rs.getString("type")),
             name = rs.getString("name"),
             issuer = rs.getString("issuer"),
             jwkSetUri = rs.getString("jwk_set_uri"),
@@ -30,7 +28,7 @@ class OAuthProviderRepository(
     
     override fun findAllByTenantId(tenantId: String): List<OAuthProvider> {
         val sql = """
-            SELECT id, tenant_id, type, name, issuer, jwk_set_uri, is_opaque, is_active, created_at, updated_at 
+            SELECT id, tenant_id, name, issuer, jwk_set_uri, is_opaque, is_active, created_at, updated_at 
             FROM tenants_oauth_providers
             WHERE tenant_id = :tenantId
             ORDER BY name
@@ -42,7 +40,7 @@ class OAuthProviderRepository(
 
     override fun findActiveByTenantId(tenantId: String): List<OAuthProvider> {
         val sql = """
-            SELECT id, tenant_id, type, name, issuer, jwk_set_uri, is_opaque, is_active, created_at, updated_at 
+            SELECT id, tenant_id, name, issuer, jwk_set_uri, is_opaque, is_active, created_at, updated_at 
             FROM tenants_oauth_providers
             WHERE tenant_id = :tenantId AND is_active = :isActive
             ORDER BY name
@@ -52,18 +50,18 @@ class OAuthProviderRepository(
         return jdbcTemplate.query(sql, params, rowMapper)
     }
 
-    override fun findByTenantIdAndType(
+    override fun findByTenantIdAndIssuer(
         tenantId: String,
-        providerType: ProviderType
+        issuer: String
     ): OAuthProvider? {
         val sql = """
-            SELECT id, tenant_id, type, name, issuer, jwk_set_uri, is_opaque, is_active, created_at, updated_at 
+            SELECT id, tenant_id, name, issuer, jwk_set_uri, is_opaque, is_active, created_at, updated_at 
             FROM tenants_oauth_providers
-            WHERE tenant_id = :tenantId AND type = :type AND is_active = :isActive
+            WHERE tenant_id = :tenantId AND issuer = :issuer AND is_active = :isActive
         """.trimIndent()
         val params = mapOf(
             "tenantId" to tenantId,
-            "type" to providerType.name,
+            "issuer" to issuer,
             "isActive" to true
         )
 

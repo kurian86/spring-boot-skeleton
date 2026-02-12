@@ -44,7 +44,7 @@ class TenantJwtDecoder(
                 "No OAuth provider found for tenant '$tenantId' and issuer '$issuer'"
             )
 
-        val cacheKey = "$tenantId:${provider.type}"
+        val cacheKey = "$tenantId:${provider.issuer}"
         val decoder = decoderCache.computeIfAbsent(cacheKey) {
             createDecoderForProvider(provider)
         }

@@ -6,7 +6,6 @@ import java.util.*
 data class OAuthProvider(
     val id: UUID,
     val tenantId: String,
-    val type: ProviderType,
     val name: String,
     val issuer: String,
     val jwkSetUri: String?,
