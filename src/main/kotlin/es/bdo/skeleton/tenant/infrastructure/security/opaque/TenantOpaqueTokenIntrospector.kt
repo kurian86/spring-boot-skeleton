@@ -25,7 +25,7 @@ class TenantOpaqueTokenIntrospector(
 
         for (provider in opaqueProviders) {
             try {
-                return introspectorResolver.introspect(token, provider.type)
+                return introspectorResolver.introspect(provider.issuer, token)
             } catch (_: Exception) {
             }
         }
