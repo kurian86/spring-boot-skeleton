@@ -5,7 +5,7 @@ interface TenantRepository {
 
     fun findById(id: String): Tenant?
 
-    fun evictCache()
+    fun evictAll()
 
     fun evictCache(id: String)
 }

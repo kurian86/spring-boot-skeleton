@@ -20,15 +20,31 @@ COMMENT ON COLUMN tenants_oauth_providers.jwk_set_uri IS 'JWK Set URI for fetchi
 COMMENT ON COLUMN tenants_oauth_providers.is_opaque IS 'Token type: true = opaque tokens (e.g., GitHub PAT), false = JWT tokens';
 
 INSERT INTO tenants_oauth_providers (
+    id,
     tenant_id,
     name,
     issuer,
     jwk_set_uri,
     is_opaque
 ) VALUES (
+    '019c660c-ecf8-7752-8f5a-f051844cf5d4',
     'default',
     'GitHub',
     'https://github.com',
     NULL,
     true
-) ON CONFLICT (tenant_id, issuer) DO NOTHING;
+);
+
+INSERT INTO tenants_oauth_providers (
+    id,
+    tenant_id,
+    name,
+    issuer,
+    jwk_set_uri
+) VALUES (
+    '019c660d-18b0-79e0-8c7c-ea4c91d68678',
+    'default',
+    'Google',
+    'https://accounts.google.com',
+    'https://www.googleapis.com/oauth2/v3/certs'
+);

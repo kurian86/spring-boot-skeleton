@@ -2,6 +2,7 @@ package es.bdo.skeleton.tenant.infrastructure
 
 import es.bdo.skeleton.tenant.domain.Tenant
 import es.bdo.skeleton.tenant.infrastructure.model.toDomain
+import org.springframework.cache.annotation.CacheEvict
 import org.springframework.cache.annotation.Cacheable
 import org.springframework.stereotype.Repository
 import es.bdo.skeleton.tenant.domain.TenantRepository as ITenantRepository
@@ -17,18 +18,18 @@ class TenantRepository(
             .map { it.toDomain() }
     }
 
-    @Cacheable(value = ["tenants"], key = "#tenantId.hashCode()")
+    @Cacheable(value = ["tenants"], key = "#id.hashCode()")
     override fun findById(id: String): Tenant? {
         return jpaRepository.findById(id)
             .map { it.toDomain() }
             .orElse(null)
     }
 
-    @Cacheable(value = ["tenants"])
-    override fun evictCache() {
+    @CacheEvict(value = ["tenants"], allEntries = true)
+    override fun evictAll() {
     }
 
-    @Cacheable(value = ["tenants"], key = "#tenantId.hashCode()")
+    @CacheEvict(value = ["tenants"], key = "#id.hashCode()")
     override fun evictCache(id: String) {
     }
 }

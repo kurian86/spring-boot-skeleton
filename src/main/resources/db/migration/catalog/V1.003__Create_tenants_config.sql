@@ -14,6 +14,17 @@ CREATE INDEX idx_tenants_config_tenant_id ON tenants_config(tenant_id);
 COMMENT ON TABLE tenants_config IS 'Tenant-specific configuration for registration domain validation and UI customization';
 COMMENT ON COLUMN tenants_config.allowed_domains IS 'Email domains allowed to register for this tenant (e.g., [''example.com'', ''acme.org''])';
 
-INSERT INTO tenants_config (tenant_id, allowed_domains, primary_color, secondary_color)
-VALUES ('default', ARRAY['example.com', 'localhost'], '#3498DB', '#2ECC71')
-ON CONFLICT (tenant_id) DO NOTHING;
+INSERT INTO tenants_config (
+    id,
+    tenant_id,
+    allowed_domains,
+    primary_color,
+    secondary_color
+)
+VALUES (
+    '019c660d-9919-7119-8423-f8ec56b5667b',
+    'default',
+    ARRAY['example.com', 'localhost'],
+    '#3498DB',
+    '#2ECC71'
+);
