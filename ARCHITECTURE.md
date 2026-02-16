@@ -9,6 +9,7 @@ This document outlines the architectural rules of the project, based on **Clean 
 - [Architecture Layers](#architecture-layers)
 - [Dependency Rules](#dependency-rules)
 - [Inter-Module Communication](#inter-module-communication)
+- [CQRS Pattern](#cqrs-pattern)
 - [Caching Strategy](#caching-strategy)
 - [DTOs and Mappers](#dtos-and-mappers)
 - [Architectural Testing](#architectural-testing)
@@ -109,49 +110,86 @@ application/
 ├── model/          # DTOs and mappers
 │   ├── UserDTO.kt
 │   └── UserMapper.kt (extensions: toDTO(), toDomain())
-├── usecase/        # Use cases
-│   ├── RegisterUserUseCase.kt
-│   └── GetAllUserUseCase.kt
+├── command/        # Commands for write operations
+│   ├── RegisterUserCommand.kt       # Data class with input parameters
+│   ├── RegisterUserCommandHandler.kt # Handler implementation
+│   └── UpdateUserCommandHandler.kt
+├── query/          # Queries for read operations
+│   ├── GetAllUsersQuery.kt          # Data class with filter parameters
+│   ├── GetAllUsersQueryHandler.kt   # Handler implementation
+│   └── GetUserByIdQueryHandler.kt
 ├── provider/       # Providers (optional, only if needed by other modules)
 │   └── UserProvider.kt
 └── exception/      # Business exceptions
     └── UserAlreadyExistsException.kt
 ```
 
-**Use Case Example:**
+**Command Example:**
 ```kotlin
+// user/application/command/RegisterUserCommand.kt
+data class RegisterUserCommand(
+    val username: String,
+    val email: String
+)
+
+// user/application/command/RegisterUserCommandHandler.kt
 @Service
-class RegisterUserUseCase(
+class RegisterUserCommandHandler(
     private val repository: UserRepository,          // Same module
     private val configProvider: ConfigProvider       // Another module (tenant)
-) {
+) : CommandHandler<RegisterUserCommand, UserDTO> {
     
     @Transactional
-    fun handle(params: Params): UserDTO {
-        // 1. Work with domain models internally
-        val existingUser = repository.findByEmail(params.email)
-        if (existingUser != null) {
-            throw UserAlreadyExistsException("...")
+    override fun handle(command: RegisterUserCommand): Result<UserDTO> {
+        return runCatching {
+            // 1. Work with domain models internally
+            val existingUser = repository.findByEmail(command.email)
+            if (existingUser != null) {
+                throw UserAlreadyExistsException("...")
+            }
+            
+            // 2. Use DTOs from other modules
+            val tenantConfig = configProvider.find()
+                ?: throw TenantNotConfiguredException("...")
+            
+            // 3. Create and save domain model
+            val newUser = User(
+                UUID.randomUUID(),
+                command.username,
+                command.email
+            )
+            
+            // 4. Return DTO wrapped in Result
+            repository.save(newUser).toDTO()
         }
-        
-        // 2. Use DTOs from other modules
-        val tenantConfig = configProvider.findByTenantId(params.tenantId)
-            ?: throw TenantNotConfiguredException("...")
-        
-        // 3. Create and save domain model
-        val newUser = User(
-            UUID.randomUUID(),
-            params.username,
-            params.email
-        )
-        
-        val savedUser = repository.save(newUser)
-        
-        // 4. Return DTO (never domain model)
-        return savedUser.toDTO()
     }
+}
+```
+
+**Query Example:**
+```kotlin
+// user/application/query/GetAllUsersQuery.kt
+data class GetAllUsersQuery(
+    val page: Int = 0,
+    val size: Int = 20
+)
+
+// user/application/query/GetAllUsersQueryHandler.kt
+@Service
+class GetAllUsersQueryHandler(
+    private val repository: UserRepository          // Same module
+) : QueryHandler<GetAllUsersQuery, PaginationResult<UserDTO>> {
     
-    data class Params(...)
+    @Transactional(readOnly = true)
+    override fun handle(query: GetAllUsersQuery): Result<PaginationResult<UserDTO>> {
+        return runCatching {
+            val total = repository.count()
+            val items = repository.findAll()
+                .map { it.toDTO() }
+            
+            PaginationResult.from(total, items)
+        }
+    }
 }
 ```
 
@@ -169,12 +207,14 @@ class ConfigProvider(
 ```
 
 **Rules:**
-- ✅ Use Cases inject Repository from the SAME module
-- ✅ Use Cases inject Providers from OTHER modules
-- ✅ Use Cases return DTOs (NEVER domain models)
+- ✅ Command Handlers inject Repository from the SAME module
+- ✅ Command Handlers inject Providers from OTHER modules
+- ✅ Command Handlers return `Result<DTO>` (NEVER domain models) after write operations
+- ✅ Query Handlers inject Repository from the SAME module
+- ✅ Query Handlers return `Result<DTO>` (NEVER domain models) for read operations
 - ✅ Providers return DTOs (NEVER domain models)
 - ✅ Providers use Repository internally
-- ❌ Use Cases do NOT inject Providers from their own module
+- ❌ Command Handlers do NOT inject Providers from their own module
 - ❌ Application must NOT depend on infrastructure
 
 ---
@@ -234,25 +274,38 @@ class UserRepository(
 @RestController
 @RequestMapping("/api/users")
 class UserController(
-    private val getAllUserUseCase: GetAllUserUseCase,
-    private val registerUserUseCase: RegisterUserUseCase
+    private val getAllUsersQueryHandler: GetAllUsersQueryHandler,
+    private val registerUserCommandHandler: RegisterUserCommandHandler
 ) {
     
     @GetMapping
-    fun index(): List<UserDTO> {
-        return getAllUserUseCase.handle()
+    fun index(): ResponseEntity<PaginationResult<UserDTO>> {
+        val query = GetAllUsersQuery(page = 0, size = 20)
+        return getAllUsersQueryHandler.handle(query)
+            .fold(
+                onSuccess = { ResponseEntity.ok(it) },
+                onFailure = { throw it }
+            )
     }
     
     @PostMapping("/register")
     @ResponseStatus(HttpStatus.CREATED)
-    fun register(authentication: Authentication): UserDTO {
-        return registerUserUseCase.handle(params)
+    fun register(@RequestBody request: RegisterUserRequest): ResponseEntity<UserDTO> {
+        val command = RegisterUserCommand(
+            username = request.username,
+            email = request.email
+        )
+        return registerUserCommandHandler.handle(command)
+            .fold(
+                onSuccess = { ResponseEntity.status(HttpStatus.CREATED).body(it) },
+                onFailure = { throw it }
+            )
     }
 }
 ```
 
 **Rules:**
-- ✅ Controllers inject Use Cases (never Repositories directly)
+- ✅ Controllers inject Command Handlers and Query Handlers (never Repositories directly)
 - ✅ Repository implementations use JPA internally
 - ✅ Infrastructure can depend on domain and application
 - ❌ Infrastructure MUST NOT expose domain models in public APIs
@@ -304,54 +357,62 @@ import es.bdo.skeleton.shared.util.DateUtils
 ### Within a Module
 
 ```
-Controller → Use Case → Repository → Database
+Controller → Command/Query Handler → Repository → Database
               ↓
            Domain Models
               ↓
             DTO (for exposure)
 ```
 
-**Example:**
+**Query Example:**
 ```kotlin
-// GetAllUserUseCase.kt
+// user/application/query/GetAllUsersQueryHandler.kt
 @Service
-class GetAllUserUseCase(
+class GetAllUsersQueryHandler(
     private val repository: UserRepository // SAME module
-) {
-    fun handle(): List<UserDTO> {
-        return repository.findAll()        // Returns List<User> (domain)
-            .map { it.toDTO() }            // Converts to List<UserDTO>
+) : QueryHandler<GetAllUsersQuery, PaginationResult<UserDTO>> {
+    
+    @Transactional(readOnly = true)
+    override fun handle(query: GetAllUsersQuery): Result<PaginationResult<UserDTO>> {
+        return runCatching {
+            val total = repository.count()
+            val items = repository.findAll()        // Returns List<User> (domain)
+                .map { it.toDTO() }                 // Converts to List<UserDTO>
+            
+            PaginationResult.from(total, items)
+        }
     }
 }
-```
 
 ### Between Modules
 
 ```
 User Module                      Tenant Module
 -----------                      -------------
-Use Case → ConfigProvider → ConfigRepository
-             ↓                      ↓
-          ConfigDTO              Config (domain)
+Command Handler → ConfigProvider → ConfigRepository
+            ↓                      ↓
+         ConfigDTO              Config (domain)
 ```
 
 **Example:**
 ```kotlin
-// RegisterUserUseCase.kt (user module)
+// user/application/command/RegisterUserCommandHandler.kt
 @Service
-class RegisterUserUseCase(
+class RegisterUserCommandHandler(
     private val configProvider: ConfigProvider, // Provider from another module
     private val repository: UserRepository      // Repository from same module
-) {
-    fun handle(params: Params): UserDTO {
-        val config = configProvider.findByTenantId(tenantId) // Receives ConfigDTO
-        
-        // ... business logic with config (DTO) and user (domain)
-        
-        return savedUser.toDTO() // Returns UserDTO
+) : CommandHandler<RegisterUserCommand, UserDTO> {
+    
+    override fun handle(command: RegisterUserCommand): Result<UserDTO> {
+        return runCatching {
+            val config = configProvider.find() // Receives ConfigDTO
+            
+            // ... business logic with config (DTO) and user (domain)
+            
+            savedUser.toDTO() // Returns UserDTO
+        }
     }
 }
-```
 
 ### Communication Matrix
 
@@ -360,6 +421,134 @@ class RegisterUserUseCase(
 | **Domain**       | ✅ | ❌ | ❌ | ❌ | ❌ |
 | **Application**  | ✅ | ✅ | ❌ | ✅ (Provider + DTO) | ❌ |
 | **Infrastructure** | ✅ | ✅ | ✅ | ✅ | ❌ |
+
+---
+
+## CQRS Pattern
+
+We follow the **Command Query Responsibility Segregation (CQRS)** pattern to separate read and write operations.
+
+### Commands (Write Operations)
+
+**Location**: `<module>/application/command/`
+
+**Structure:**
+- `<Action><Entity>Command.kt` - Data class with input parameters
+- `<Action><Entity>CommandHandler.kt` - Handler implementing `CommandHandler<T, R>`
+
+**Responsibilities:**
+- Handle all write operations (create, update, delete)
+- Contain business logic and validation
+- Return `Result<DTO>` after write operations
+- Always use `@Transactional`
+
+**Naming Convention:**
+- `Create<Entity>Command` / `Create<Entity>CommandHandler`
+- `Update<Entity>Command` / `Update<Entity>CommandHandler`
+- `Delete<Entity>Command` / `Delete<Entity>CommandHandler`
+- `Perform<Action>Command` / `Perform<Action>CommandHandler`
+
+**Example:**
+```kotlin
+// product/application/command/CreateProductCommand.kt
+data class CreateProductCommand(
+    val name: String,
+    val price: BigDecimal
+)
+
+// product/application/command/CreateProductCommandHandler.kt
+@Service
+class CreateProductCommandHandler(
+    private val repository: ProductRepository
+) : CommandHandler<CreateProductCommand, ProductDTO> {
+    
+    @Transactional
+    override fun handle(command: CreateProductCommand): Result<ProductDTO> {
+        return runCatching {
+            // Business logic
+            val product = Product(
+                id = UUID.randomUUID(),
+                name = command.name,
+                price = command.price
+            )
+            repository.save(product).toDTO()
+        }
+    }
+}
+```
+
+### Queries (Read Operations)
+
+**Location**: `<module>/application/query/`
+
+**Structure:**
+- `Get<Entity>ByIdQuery.kt` - Data class with filter parameters
+- `Get<Entity>ByIdQueryHandler.kt` - Handler implementing `QueryHandler<T, R>`
+
+**Responsibilities:**
+- Handle all read operations
+- Return `Result<DTO>` or `Result<PaginationResult<DTO>>`
+- No side effects (read-only)
+- Use `@Transactional(readOnly = true)`
+
+**Naming Convention:**
+- `Get<Entity>ByIdQuery` / `Get<Entity>ByIdQueryHandler`
+- `GetAll<Entities>Query` / `GetAll<Entities>QueryHandler`
+- `Search<Entities>Query` / `Search<Entities>QueryHandler`
+- `Count<Entities>Query` / `Count<Entities>QueryHandler`
+
+**Example:**
+```kotlin
+// product/application/query/GetProductByIdQuery.kt
+data class GetProductByIdQuery(
+    val id: UUID
+)
+
+// product/application/query/GetProductByIdQueryHandler.kt
+@Service
+class GetProductByIdQueryHandler(
+    private val repository: ProductRepository
+) : QueryHandler<GetProductByIdQuery, ProductDTO> {
+    
+    @Transactional(readOnly = true)
+    override fun handle(query: GetProductByIdQuery): Result<ProductDTO> {
+        return runCatching {
+            repository.findById(query.id)?.toDTO()
+                ?: throw ProductNotFoundException("Product ${query.id} not found")
+        }
+    }
+}
+```
+
+### Communication Flow
+
+```
+┌─────────────────┐
+│   Controller    │
+└───────┬─────────┘
+        │
+   ┌────┴────┐
+   │         │
+   ▼         ▼
+Command    Query
+Handler    Handler
+   │         │
+   ▼         ▼
+Repository  Repository
+   │         │
+   ▼         ▼
+  Domain    Domain
+   │         │
+   ▼         ▼
+Result<DTO> Result<DTO>
+```
+
+**Benefits:**
+- **Clarity**: Clear separation between reads and writes
+- **Optimization**: Queries can be optimized separately from commands
+- **Scalability**: Read and write operations can scale independently
+- **Testability**: Easier to test individual operations
+- **Error Handling**: `Result<T>` provides functional error handling with `runCatching`
 
 ---
 
@@ -422,7 +611,7 @@ class ConfigProvider(
 - ✅ `@CacheEvict` on cache invalidation methods
 - ✅ `@CachePut` to update cache after modifications
 - ❌ Do NOT use `@Cacheable` on `evict*` methods (use `@CacheEvict` instead)
-- ❌ Do NOT cache Use Cases (too high level)
+- ❌ Do NOT cache Query Handlers or Command Handlers (too high level)
 
 ---
 
@@ -585,9 +774,13 @@ When creating a new feature, verify:
 ### Application
 - [ ] DTOs in `application/model/`
 - [ ] Extension function mappers
-- [ ] Use Cases inject Repository from SAME module
-- [ ] Use Cases inject Providers from OTHER modules
-- [ ] Use Cases return DTOs
+- [ ] Command Handlers implement `CommandHandler<T, R>` interface
+- [ ] Command Handlers inject Repository from SAME module
+- [ ] Command Handlers inject Providers from OTHER modules
+- [ ] Command Handlers return `Result<DTO>` after write operations
+- [ ] Query Handlers implement `QueryHandler<T, R>` interface
+- [ ] Query Handlers inject Repository from SAME module
+- [ ] Query Handlers return `Result<DTO>` for read operations
 - [ ] Providers return DTOs (if exposed to other modules)
 
 ### Infrastructure
@@ -598,7 +791,8 @@ When creating a new feature, verify:
 - [ ] Caching in Repository if needed
 
 ### Testing
-- [ ] Use Case unit tests
+- [ ] Command Handler unit tests
+- [ ] Query Handler unit tests
 - [ ] Repository integration tests
 - [ ] Controller slice tests
 - [ ] All ArchUnit tests pass
@@ -607,11 +801,19 @@ When creating a new feature, verify:
 
 ## Patterns and Best Practices
 
-### 1. Use Case Pattern
-- One Use Case = One business operation
-- Input: `Params` data class
-- Output: `DTO` or `List<DTO>`
-- Methods: `execute()` or `handle()`
+### 1. CQRS Pattern (Command Query Responsibility Segregation)
+- **Commands**: Handle write operations (create, update, delete)
+  - One Command = One write operation
+  - Input: `Command` data class
+  - Output: `Result<DTO>`
+  - Methods: `handle(command)`
+  - Interface: `CommandHandler<T, R>`
+- **Queries**: Handle read operations
+  - One Query = One read operation
+  - Input: `Query` data class with filter/sort parameters
+  - Output: `Result<DTO>` or `Result<PaginationResult<DTO>>`
+  - Methods: `handle(query)`
+  - Interface: `QueryHandler<T, R>`
 
 ### 2. Repository Pattern
 - Interface in Domain
@@ -645,9 +847,16 @@ product/
 ├── application/
 │   ├── model/
 │   │   └── ProductDTO.kt
-│   ├── usecase/
-│   │   ├── CreateProductUseCase.kt
-│   │   └── GetAllProductsUseCase.kt
+│   ├── command/
+│   │   ├── CreateProductCommand.kt         # Data class
+│   │   ├── CreateProductCommandHandler.kt  # Handler
+│   │   ├── UpdateProductCommand.kt         # Data class
+│   │   └── UpdateProductCommandHandler.kt  # Handler
+│   ├── query/
+│   │   ├── GetAllProductsQuery.kt          # Data class
+│   │   ├── GetAllProductsQueryHandler.kt   # Handler
+│   │   ├── GetProductByIdQuery.kt          # Data class
+│   │   └── GetProductByIdQueryHandler.kt   # Handler
 │   └── ProductProvider.kt (if exposed to other modules)
 └── infrastructure/
     ├── controller/
@@ -658,53 +867,54 @@ product/
     └── ProductRepository.kt
 ```
 
-### Example 2: Use case that consumes another module
+### Example 2: Command Handler that consumes another module
 ```kotlin
-// order/application/usecase/CreateOrderUseCase.kt
+// order/application/command/CreateOrderCommand.kt
+data class CreateOrderCommand(
+    val productId: UUID,
+    val userId: UUID,
+    val quantity: Int
+)
+
+// order/application/command/CreateOrderCommandHandler.kt
 @Service
-class CreateOrderUseCase(
+class CreateOrderCommandHandler(
     private val orderRepository: OrderRepository,    // Same module
     private val productProvider: ProductProvider,    // Another module (product)
     private val userProvider: UserProvider           // Another module (user)
-) {
+) : CommandHandler<CreateOrderCommand, OrderDTO> {
     
     @Transactional
-    fun handle(params: Params): OrderDTO {
-        // Validate that the product exists (uses DTO from another module)
-        val product = productProvider.findById(params.productId)
-            ?: throw ProductNotFoundException()
-        
-        // Validate that the user exists (uses DTO from another module)
-        val user = userProvider.findById(params.userId)
-            ?: throw UserNotFoundException()
-        
-        // Create order (domain model from this module)
-        val order = Order(
-            id = UUID.randomUUID(),
-            productId = params.productId,
-            userId = params.userId,
-            quantity = params.quantity,
-            totalPrice = product.price * params.quantity
-        )
-        
-        val savedOrder = orderRepository.save(order)
-        
-        return savedOrder.toDTO()
+    override fun handle(command: CreateOrderCommand): Result<OrderDTO> {
+        return runCatching {
+            // Validate that the product exists (uses DTO from another module)
+            val product = productProvider.findById(command.productId)
+                ?: throw ProductNotFoundException()
+            
+            // Validate that the user exists (uses DTO from another module)
+            val user = userProvider.findById(command.userId)
+                ?: throw UserNotFoundException()
+            
+            // Create order (domain model from this module)
+            val order = Order(
+                id = UUID.randomUUID(),
+                productId = command.productId,
+                userId = command.userId,
+                quantity = command.quantity,
+                totalPrice = product.price * command.quantity
+            )
+            
+            orderRepository.save(order).toDTO()
+        }
     }
-    
-    data class Params(
-        val productId: UUID,
-        val userId: UUID,
-        val quantity: Int
-    )
 }
 ```
 ---
 
 ## FAQ
 
-### Why shouldn't Use Cases use Providers from their own module?
-Because the Provider is an **anti-corruption layer** for other modules. Within the same module, the Use Case should work directly with the domain through the Repository. Adding a Provider in the middle would be redundant and add unnecessary Domain ↔ DTO conversions.
+### Why shouldn't Command Handlers use Providers from their own module?
+Because the Provider is an **anti-corruption layer** for other modules. Within the same module, the Command Handler should work directly with the domain through the Repository. Adding a Provider in the middle would be redundant and add unnecessary Domain ↔ DTO conversions.
 
 ### When should I create a Provider?
 Only if **other modules need to access your module**. If your module is self-contained and doesn't expose functionalities for other modules, you do not need a Provider.
@@ -713,7 +923,7 @@ Only if **other modules need to access your module**. If your module is self-con
 - **Repository**: To cache domain data (findById, findAll)
 - **Provider**: To cache DTOs shared with other modules
 - **QueryService**: To cache complex query or report results
-**Never** in Use Cases, since a Use Case can have very specific logic that shouldn't be cached.
+**Never** in Command Handlers or Query Handlers, since they can have very specific logic that shouldn't be cached.
 
 ### Can DTOs have logic?
 No. DTOs are **data transfer objects**, and must NOT contain business logic. Logic should be in the domain or Use Cases.
