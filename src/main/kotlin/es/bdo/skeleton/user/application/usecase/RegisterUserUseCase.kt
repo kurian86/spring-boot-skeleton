@@ -3,13 +3,13 @@ package es.bdo.skeleton.user.application.usecase
 import es.bdo.skeleton.tenant.application.ConfigProvider
 import es.bdo.skeleton.tenant.application.exception.TenantNotConfiguredException
 import es.bdo.skeleton.user.application.exception.EmailDomainNotAllowedException
+import es.bdo.skeleton.shared.annotation.TenantTransactional
 import es.bdo.skeleton.user.application.exception.UserAlreadyExistsException
 import es.bdo.skeleton.user.application.model.UserDTO
 import es.bdo.skeleton.user.application.model.toDTO
 import es.bdo.skeleton.user.domain.User
 import es.bdo.skeleton.user.domain.UserRepository
 import org.springframework.stereotype.Service
-import org.springframework.transaction.annotation.Transactional
 import java.util.*
 
 @Service
@@ -18,7 +18,7 @@ class RegisterUserUseCase(
     private val repository: UserRepository
 ) {
 
-    @Transactional
+    @TenantTransactional
     fun handle(params: Params): UserDTO {
         val existingUser = repository.findByEmail(params.email)
         if (existingUser != null) {
