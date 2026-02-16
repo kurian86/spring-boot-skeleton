@@ -37,7 +37,9 @@ fun ConfigEntity.toDomain(): Config {
     return Config(
         id,
         tenantId,
-        allowedDomains,
+        allowedDomains.map { domain ->
+            domain.trim().removePrefix("{").removeSuffix("}").removeSurrounding("\"", "\"")
+        },
         primaryColor,
         secondaryColor,
         logoUrl
