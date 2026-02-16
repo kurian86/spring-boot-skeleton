@@ -1,14 +1,19 @@
 package es.bdo.skeleton.absence.application.usecase
 
-import es.bdo.skeleton.absence.application.AbsenceProvider
-import es.bdo.skeleton.absence.domain.Absence
+import es.bdo.skeleton.absence.application.model.AbsenceDTO
+import es.bdo.skeleton.absence.application.model.toDTO
+import es.bdo.skeleton.absence.domain.AbsenceRepository
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
 
 @Service
 class GetAllAbsenceUseCase(
-    private val provider: AbsenceProvider
+    private val repository: AbsenceRepository
 ) {
-    fun handle(): List<Absence> {
-        return provider.findAll()
+
+    @Transactional(readOnly = true)
+    fun handle(): List<AbsenceDTO> {
+        return repository.findAll()
+            .map { it.toDTO() }
     }
 }

@@ -1,5 +1,5 @@
-CREATE TABLE IF NOT EXISTS tenants_oauth_providers (
-    id                UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+CREATE TABLE tenants_oauth_providers (
+    id                UUID PRIMARY KEY,
     tenant_id         VARCHAR(50)   NOT NULL REFERENCES tenants(id) ON DELETE CASCADE,
     name              VARCHAR(100)  NOT NULL,
     issuer            VARCHAR(255)  NOT NULL,
@@ -11,8 +11,8 @@ CREATE TABLE IF NOT EXISTS tenants_oauth_providers (
     UNIQUE(tenant_id, issuer)
 );
 
-CREATE INDEX IF NOT EXISTS idx_oauth_providers_tenant ON tenants_oauth_providers(tenant_id);
-CREATE INDEX IF NOT EXISTS idx_oauth_providers_active ON tenants_oauth_providers(tenant_id, is_active);
+CREATE INDEX idx_tenants_oauth_providers_tenant ON tenants_oauth_providers(tenant_id);
+CREATE INDEX idx_tenants_oauth_providers_active ON tenants_oauth_providers(tenant_id, is_active);
 
 COMMENT ON TABLE tenants_oauth_providers IS 'OAuth2 provider configurations for resource server. Supports both JWT (requires jwk_set_uri) and opaque token (requires only issuer) validation.';
 COMMENT ON COLUMN tenants_oauth_providers.issuer IS 'OAuth2 issuer URL - unique identifier for the provider. For JWT: used in token validation. For opaque: used for provider identification. Must be unique per tenant.';

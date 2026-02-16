@@ -1,8 +1,8 @@
 package es.bdo.skeleton.tenant.infrastructure.security
 
 import es.bdo.skeleton.tenant.application.TenantContext
-import es.bdo.skeleton.tenant.application.TenantProvider
 import es.bdo.skeleton.tenant.application.exception.TenantNotFoundException
+import es.bdo.skeleton.tenant.domain.TenantRepository
 import jakarta.servlet.FilterChain
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
@@ -14,7 +14,7 @@ import org.springframework.web.filter.OncePerRequestFilter
 @Component
 @Order(Ordered.HIGHEST_PRECEDENCE)
 class TenantContextFilter(
-    private val tenantProvider: TenantProvider
+    private val repository: TenantRepository,
 ) : OncePerRequestFilter() {
 
     companion object {
@@ -44,11 +44,11 @@ class TenantContextFilter(
             throw TenantNotFoundException("Tenant ID cannot be blank")
         }
 
-        val tenant = tenantProvider.findById(tenantId)
+        val tenant = repository.findById(tenantId)
             ?: throw TenantNotFoundException("Tenant not found: $tenantId")
 
         if (!tenant.isActive) {
-            tenantProvider.evictTenant(tenantId)
+            repository.evictCache(tenantId)
             throw TenantNotFoundException("Tenant is not active: $tenantId")
         }
 

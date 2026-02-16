@@ -1,0 +1,16 @@
+package es.bdo.skeleton.tenant.application
+
+import es.bdo.skeleton.tenant.application.model.ConfigDTO
+import es.bdo.skeleton.tenant.application.model.toDTO
+import es.bdo.skeleton.tenant.domain.ConfigRepository
+import org.springframework.stereotype.Service
+
+@Service
+class ConfigProvider(
+    private val repository: ConfigRepository
+) {
+
+    fun findByTenantId(tenantId: String): ConfigDTO? {
+        return repository.findByTenantId(tenantId)?.toDTO()
+    }
+}

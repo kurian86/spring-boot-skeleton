@@ -1,4 +1,4 @@
-package es.bdo.skeleton.tenant.infrastructure.security
+package es.bdo.skeleton.tenant.application.security
 
 data class UserInfo(
     val subject: String,

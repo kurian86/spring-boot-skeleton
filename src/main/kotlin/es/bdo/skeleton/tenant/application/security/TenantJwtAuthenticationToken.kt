@@ -1,6 +1,5 @@
-package es.bdo.skeleton.tenant.infrastructure.security.jwt
+package es.bdo.skeleton.tenant.application.security
 
-import es.bdo.skeleton.tenant.infrastructure.security.UserInfo
 import org.springframework.security.core.GrantedAuthority
 import org.springframework.security.oauth2.jwt.Jwt
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken
@@ -16,8 +15,4 @@ class TenantJwtAuthenticationToken(
     }
 
     override fun getPrincipal(): UserInfo = userInfo
-
-    override fun toString(): String {
-        return "TenantJwtAuthenticationToken(userInfo=$userInfo, authorities=$authorities)"
-    }
 }
