@@ -1,6 +1,6 @@
 package es.bdo.skeleton.tenant.infrastructure.security.jwt
 
-import es.bdo.skeleton.tenant.infrastructure.security.UserInfo
+import es.bdo.skeleton.tenant.application.security.UserInfo
 import org.springframework.security.oauth2.jwt.Jwt
 
 class GenericUserInfoExtractor : UserInfoExtractor {

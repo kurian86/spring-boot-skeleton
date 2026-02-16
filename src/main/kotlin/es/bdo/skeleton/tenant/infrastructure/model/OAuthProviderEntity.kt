@@ -1,5 +1,6 @@
 package es.bdo.skeleton.tenant.infrastructure.model
 
+import es.bdo.skeleton.tenant.domain.OAuthProvider
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
 import jakarta.persistence.Id
@@ -38,3 +39,18 @@ data class OAuthProviderEntity(
     @Column(name = "updated_at", nullable = false)
     val updatedAt: ZonedDateTime = ZonedDateTime.now()
 )
+
+fun OAuthProviderEntity.toDomain(): OAuthProvider {
+    return OAuthProvider(
+        id,
+        tenantId,
+        name,
+        issuer,
+        jwkSetUri,
+        isOpaque,
+        isActive,
+        createdAt,
+        updatedAt
+    )
+}
+

@@ -1,6 +1,5 @@
-package es.bdo.skeleton.tenant.infrastructure.security.opaque
+package es.bdo.skeleton.tenant.application.security
 
-import es.bdo.skeleton.tenant.infrastructure.security.UserInfo
 import org.springframework.security.core.GrantedAuthority
 import org.springframework.security.oauth2.core.OAuth2AuthenticatedPrincipal
 import org.springframework.security.oauth2.server.resource.authentication.BearerTokenAuthenticationToken
@@ -24,8 +23,4 @@ class TenantOpaqueAuthenticationToken(
     override fun getCredentials(): String? = null
 
     override fun getDetails(): Any? = oauth2Principal.attributes
-
-    override fun toString(): String {
-        return "TenantOpaqueAuthenticationToken(userInfo=$userInfo, authorities=$tokenAuthorities)"
-    }
 }

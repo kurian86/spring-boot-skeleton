@@ -1,9 +1,9 @@
 package es.bdo.skeleton.tenant.infrastructure.service
 
 import com.zaxxer.hikari.HikariDataSource
-import es.bdo.skeleton.tenant.application.TenantProvider
 import es.bdo.skeleton.tenant.application.exception.TenantNotFoundException
 import es.bdo.skeleton.tenant.domain.Tenant
+import es.bdo.skeleton.tenant.domain.TenantRepository
 import es.bdo.skeleton.tenant.infrastructure.config.TenantProperties
 import org.springframework.stereotype.Service
 import java.util.concurrent.ConcurrentHashMap
@@ -11,9 +11,9 @@ import javax.sql.DataSource
 
 @Service
 class TenantConfigurationService(
+    private val encryptionService: EncryptionService,
     private val properties: TenantProperties,
-    private val provider: TenantProvider,
-    private val encryptionService: EncryptionService
+    private val repository: TenantRepository,
 ) {
 
     private val dataSources = ConcurrentHashMap<String, DataSource>()
@@ -23,7 +23,7 @@ class TenantConfigurationService(
     }
 
     fun loadAllTenants(): Map<String, DataSource> {
-        val tenants = provider.findAllActive()
+        val tenants = repository.findAllActive()
 
         tenants.forEach { tenant ->
             dataSources[tenant.id] = createDataSource(tenant)
@@ -36,7 +36,7 @@ class TenantConfigurationService(
         var dataSource = dataSources[tenantId]
 
         if (dataSource == null) {
-            val tenant = provider.findById(tenantId)
+            val tenant = repository.findById(tenantId)
                 ?: throw TenantNotFoundException("Tenant not found: $tenantId")
 
             if (!tenant.isActive) {
@@ -74,7 +74,7 @@ class TenantConfigurationService(
 
     fun evictDataSource(tenantId: String) {
         dataSources.remove(tenantId)
-        provider.evictTenant(tenantId)
+        repository.evictCache(tenantId)
     }
 
     fun getAllActiveDataSources(): Map<String, DataSource> {

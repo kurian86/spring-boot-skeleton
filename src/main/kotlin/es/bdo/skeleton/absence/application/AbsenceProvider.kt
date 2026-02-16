@@ -1,6 +1,7 @@
 package es.bdo.skeleton.absence.application
 
-import es.bdo.skeleton.absence.domain.Absence
+import es.bdo.skeleton.absence.application.model.AbsenceDTO
+import es.bdo.skeleton.absence.application.model.toDTO
 import es.bdo.skeleton.absence.domain.AbsenceRepository
 import org.springframework.stereotype.Service
 
@@ -9,7 +10,8 @@ class AbsenceProvider(
     private val absenceRepository: AbsenceRepository
 ) {
 
-    fun findAll(): List<Absence> {
+    fun findAll(): List<AbsenceDTO> {
         return absenceRepository.findAll()
+            .map { it.toDTO() }
     }
 }

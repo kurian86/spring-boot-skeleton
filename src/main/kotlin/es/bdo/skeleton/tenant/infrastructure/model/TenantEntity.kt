@@ -1,5 +1,6 @@
 package es.bdo.skeleton.tenant.infrastructure.model
 
+import es.bdo.skeleton.tenant.domain.Tenant
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
 import jakarta.persistence.Id
@@ -26,11 +27,24 @@ data class TenantEntity(
     val dbPassword: String,
 
     @Column(name = "is_active", nullable = false)
-    val isActive: Boolean,
+    val isActive: Boolean = true,
 
     @Column(name = "created_at", nullable = false)
-    val createdAt: ZonedDateTime,
+    val createdAt: ZonedDateTime = ZonedDateTime.now(),
 
     @Column(name = "updated_at", nullable = false)
-    val updatedAt: ZonedDateTime
+    val updatedAt: ZonedDateTime = ZonedDateTime.now()
 )
+
+fun TenantEntity.toDomain(): Tenant {
+    return Tenant(
+        id,
+        name,
+        dbDatabase,
+        dbUsername,
+        dbPassword,
+        isActive,
+        createdAt,
+        updatedAt
+    )
+}
