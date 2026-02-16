@@ -8,7 +8,7 @@ import es.bdo.skeleton.tenant.infrastructure.security.jwt.TenantJwtDecoder
 import es.bdo.skeleton.tenant.infrastructure.security.jwt.UserInfoExtractorResolver
 import es.bdo.skeleton.tenant.infrastructure.security.opaque.OpaqueTokenIntrospectorResolver
 import es.bdo.skeleton.tenant.infrastructure.security.opaque.TenantOpaqueTokenIntrospector
-import es.bdo.skeleton.user.application.service.UserAuthorizationService
+import es.bdo.skeleton.user.application.UserProvider
 import jakarta.servlet.http.HttpServletRequest
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
@@ -46,19 +46,6 @@ class SecurityConfig {
             .oauth2ResourceServer { oauth2 ->
                 oauth2.authenticationManagerResolver(authenticationManagerResolver)
             }
-            .exceptionHandling { exceptionHandling ->
-                exceptionHandling
-                    .authenticationEntryPoint { _, response, authException ->
-                        response.status = HttpStatus.UNAUTHORIZED.value()
-                        response.contentType = "application/json"
-                        response.writer.write("""{"error": "${authException.message}"}""")
-                    }
-                    .accessDeniedHandler { _, response, accessDeniedException ->
-                        response.status = HttpStatus.FORBIDDEN.value()
-                        response.contentType = "application/json"
-                        response.writer.write("""{"error": "${accessDeniedException.message}"}""")
-                    }
-            }
 
         return http.build()
     }
@@ -68,12 +55,12 @@ class SecurityConfig {
         oauthProviderRepository: OAuthProviderRepository,
         userInfoExtractorResolver: UserInfoExtractorResolver,
         opaqueTokenIntrospectorResolver: OpaqueTokenIntrospectorResolver,
-        userAuthorizationService: UserAuthorizationService
+        userProvider: UserProvider
     ): AuthenticationManagerResolver<HttpServletRequest> {
         return TenantAuthenticationManagerResolver(
             TenantJwtDecoder(oauthProviderRepository),
-            TenantJwtAuthenticationConverter(userInfoExtractorResolver, userAuthorizationService),
-            TenantOpaqueTokenIntrospector(opaqueTokenIntrospectorResolver, oauthProviderRepository, userAuthorizationService)
+            TenantJwtAuthenticationConverter(userInfoExtractorResolver, userProvider),
+            TenantOpaqueTokenIntrospector(opaqueTokenIntrospectorResolver, oauthProviderRepository, userProvider)
         )
     }
 }

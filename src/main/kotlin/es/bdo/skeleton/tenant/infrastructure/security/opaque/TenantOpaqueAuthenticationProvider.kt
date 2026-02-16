@@ -4,7 +4,6 @@ import es.bdo.skeleton.tenant.application.security.TenantOpaqueAuthenticationTok
 import es.bdo.skeleton.tenant.application.security.UserInfo
 import org.springframework.security.authentication.AuthenticationProvider
 import org.springframework.security.core.Authentication
-import org.springframework.security.core.authority.SimpleGrantedAuthority
 import org.springframework.security.oauth2.core.OAuth2AuthenticatedPrincipal
 import org.springframework.security.oauth2.server.resource.authentication.BearerTokenAuthenticationToken
 import org.springframework.security.oauth2.server.resource.authentication.OpaqueTokenAuthenticationProvider
@@ -28,7 +27,7 @@ class TenantOpaqueAuthenticationProvider(
         return TenantOpaqueAuthenticationToken(
             authentication as BearerTokenAuthenticationToken,
             oauth2Principal,
-            authResult.authorities + SimpleGrantedAuthority("ROLE_USER"),
+            authResult.authorities,
             userInfo
         )
     }

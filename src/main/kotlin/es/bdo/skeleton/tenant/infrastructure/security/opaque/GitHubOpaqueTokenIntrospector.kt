@@ -1,6 +1,5 @@
 package es.bdo.skeleton.tenant.infrastructure.security.opaque
 
-import org.springframework.security.core.authority.SimpleGrantedAuthority
 import org.springframework.security.oauth2.core.OAuth2AuthenticatedPrincipal
 import org.springframework.security.oauth2.server.resource.introspection.BadOpaqueTokenException
 import org.springframework.security.oauth2.server.resource.introspection.OAuth2IntrospectionAuthenticatedPrincipal
@@ -38,7 +37,7 @@ class GitHubOpaqueTokenIntrospector : OpaqueTokenIntrospector {
             return OAuth2IntrospectionAuthenticatedPrincipal(
                 user.login,
                 attributes,
-                listOf(SimpleGrantedAuthority("ROLE_USER"))
+                listOf()
             )
         } catch (ex: RestClientException) {
             throw BadOpaqueTokenException("Token introspection failed: ${ex.message}")
