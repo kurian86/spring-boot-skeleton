@@ -1,5 +1,6 @@
-package es.bdo.skeleton.tenant.application.security
+package es.bdo.skeleton.tenant.infrastructure.security.opaque
 
+import es.bdo.skeleton.tenant.application.security.UserInfo
 import org.springframework.security.core.GrantedAuthority
 import org.springframework.security.oauth2.core.OAuth2AuthenticatedPrincipal
 import org.springframework.security.oauth2.server.resource.authentication.BearerTokenAuthenticationToken

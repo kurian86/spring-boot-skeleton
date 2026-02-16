@@ -11,6 +11,10 @@ class UserRepository(
     private val jpaRepository: UserJpaRepository
 ) : IUserRepository {
 
+    override fun count(): Long {
+        return jpaRepository.count()
+    }
+
     override fun findAll(): List<User> {
         return jpaRepository.findAll()
             .map { it.toDomain() }
