@@ -7,6 +7,7 @@ import es.bdo.skeleton.user.application.model.UserDTO
 import es.bdo.skeleton.user.application.usecase.GetAllUserUseCase
 import es.bdo.skeleton.user.application.usecase.RegisterUserUseCase
 import org.springframework.http.HttpStatus
+import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.security.core.Authentication
 import org.springframework.web.bind.annotation.*
 
@@ -19,6 +20,7 @@ class UserController(
 ) {
 
     @GetMapping
+    @PreAuthorize("hasRole('USER')")
     fun index(): List<UserDTO> {
         val users = getAllUserUseCase.handle()
         return users
