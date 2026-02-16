@@ -1,6 +1,8 @@
 package es.bdo.skeleton.user.domain
 
 interface UserRepository {
+    fun count(): Long
+
     fun findAll(): List<User>
 
     fun findByEmail(email: String): User?

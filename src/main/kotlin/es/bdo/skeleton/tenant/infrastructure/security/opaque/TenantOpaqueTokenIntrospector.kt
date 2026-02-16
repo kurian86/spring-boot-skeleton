@@ -15,7 +15,7 @@ class TenantOpaqueTokenIntrospector(
 ) : SpringOpaqueTokenIntrospector {
 
     override fun introspect(token: String): OAuth2AuthenticatedPrincipal {
-        val tenantId = TenantContext.tenantId
+        val tenantId = TenantContext.getOrNull()
             ?: throw IllegalStateException("No tenant context available")
 
         val opaqueProviders = oauthProviderRepository.findActiveByTenantId(tenantId)

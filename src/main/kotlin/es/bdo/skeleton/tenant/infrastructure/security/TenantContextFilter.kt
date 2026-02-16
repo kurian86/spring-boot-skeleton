@@ -26,20 +26,16 @@ class TenantContextFilter(
         response: HttpServletResponse,
         filterChain: FilterChain
     ) {
-        try {
-            val tenantId = extractTenantId(request)
-            validateAndSetTenant(tenantId)
+        val tenantId = extractAndValidateTenantId(request)
+
+        TenantContext.withTenant(tenantId) {
             filterChain.doFilter(request, response)
-        } finally {
-            TenantContext.clear()
         }
     }
 
-    private fun extractTenantId(request: HttpServletRequest): String {
-        return request.getHeader(TENANT_HEADER) ?: TenantContext.DEFAULT_TENANT
-    }
-
-    private fun validateAndSetTenant(tenantId: String) {
+    private fun extractAndValidateTenantId(request: HttpServletRequest): String {
+        val tenantId = request.getHeader(TENANT_HEADER) ?: TenantContext.DEFAULT_TENANT
+        
         if (tenantId.isBlank()) {
             throw TenantNotFoundException("Tenant ID cannot be blank")
         }
@@ -52,6 +48,6 @@ class TenantContextFilter(
             throw TenantNotFoundException("Tenant is not active: $tenantId")
         }
 
-        TenantContext.tenantId = tenantId
+        return tenantId
     }
 }

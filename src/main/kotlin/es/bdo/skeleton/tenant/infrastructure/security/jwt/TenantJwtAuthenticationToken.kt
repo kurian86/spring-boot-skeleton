@@ -1,5 +1,6 @@
-package es.bdo.skeleton.tenant.application.security
+package es.bdo.skeleton.tenant.infrastructure.security.jwt
 
+import es.bdo.skeleton.tenant.application.security.UserInfo
 import org.springframework.security.core.GrantedAuthority
 import org.springframework.security.oauth2.jwt.Jwt
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken

@@ -1,15 +1,22 @@
 package es.bdo.skeleton.tenant.application
 
+import java.lang.ScopedValue
+
 object TenantContext {
     const val DEFAULT_TENANT = "default"
+    
+    private val TENANT: ScopedValue<String> = ScopedValue.newInstance()
 
-    private val currentTenant = InheritableThreadLocal<String>()
+    val tenantId: String
+        get() = if (TENANT.isBound) TENANT.get() else DEFAULT_TENANT
 
-    var tenantId: String?
-        get() = currentTenant.get()
-        set(value) = currentTenant.set(value)
+    fun isBound(): Boolean = TENANT.isBound
 
-    fun clear() {
-        currentTenant.remove()
+    fun getOrNull(): String? = if (TENANT.isBound) TENANT.get() else null
+
+    fun <T> withTenant(tenantId: String, operation: () -> T): T {
+        return ScopedValue.where(TENANT, tenantId).call(
+            ScopedValue.CallableOp<T, RuntimeException> { operation() }
+        )
     }
 }

@@ -32,7 +32,7 @@ class TenantJwtDecoder(
     private val decoderCache = ConcurrentHashMap<String, JwtDecoder>()
 
     override fun decode(token: String): Jwt {
-        val tenantId = TenantContext.tenantId
+        val tenantId = TenantContext.getOrNull()
             ?: throw IllegalStateException("No tenant context available")
 
         val unverifiedJwt = parseWithoutVerification(token)

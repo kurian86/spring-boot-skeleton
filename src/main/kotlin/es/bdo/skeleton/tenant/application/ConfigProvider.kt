@@ -10,7 +10,8 @@ class ConfigProvider(
     private val repository: ConfigRepository
 ) {
 
-    fun findByTenantId(tenantId: String): ConfigDTO? {
+    fun find(): ConfigDTO? {
+        val tenantId = TenantContext.getOrNull() ?: return null
         return repository.findByTenantId(tenantId)?.toDTO()
     }
 }

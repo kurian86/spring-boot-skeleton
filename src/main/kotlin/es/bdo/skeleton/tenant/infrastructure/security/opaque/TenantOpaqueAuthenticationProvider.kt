@@ -1,6 +1,6 @@
 package es.bdo.skeleton.tenant.infrastructure.security.opaque
 
-import es.bdo.skeleton.tenant.application.security.TenantOpaqueAuthenticationToken
+import es.bdo.skeleton.tenant.infrastructure.security.opaque.TenantOpaqueAuthenticationToken
 import es.bdo.skeleton.tenant.application.security.UserInfo
 import org.springframework.security.authentication.AuthenticationProvider
 import org.springframework.security.core.Authentication
