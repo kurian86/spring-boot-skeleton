@@ -23,9 +23,6 @@ data class UserEntity(
     @Column(name = "status", nullable = false)
     val status: UserStatus = UserStatus.ACTIVE,
 
-    @Column(name = "last_login_at")
-    val lastLoginAt: ZonedDateTime? = null,
-
     @Column(name = "created_at", nullable = false)
     val createdAt: ZonedDateTime = ZonedDateTime.now(),
 
@@ -38,7 +35,6 @@ fun UserEntity.toDomain() = User(
     name,
     email,
     status,
-    lastLoginAt,
     createdAt,
     updatedAt,
 )
@@ -48,7 +44,6 @@ fun User.toEntity() = UserEntity(
     name,
     email,
     status,
-    lastLoginAt,
     createdAt,
     updatedAt,
 )

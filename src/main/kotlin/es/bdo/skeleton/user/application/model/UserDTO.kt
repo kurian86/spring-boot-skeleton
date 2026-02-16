@@ -10,7 +10,6 @@ data class UserDTO(
     val email: String,
     val status: UserStatusDTO = UserStatusDTO.ACTIVE,
     val roles: Set<String> = emptySet(),
-    val lastLoginAt: ZonedDateTime? = null,
     val createdAt: ZonedDateTime = ZonedDateTime.now(),
     val updatedAt: ZonedDateTime = ZonedDateTime.now(),
 )
@@ -21,7 +20,6 @@ fun User.toDTO() = UserDTO(
     email,
     status.toDTO(),
     setOf("ROLE_USER"),
-    lastLoginAt,
     createdAt,
     updatedAt
 )
