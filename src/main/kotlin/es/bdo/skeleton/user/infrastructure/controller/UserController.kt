@@ -2,7 +2,7 @@ package es.bdo.skeleton.user.infrastructure.controller
 
 import es.bdo.skeleton.tenant.application.TenantContext
 import es.bdo.skeleton.tenant.application.exception.TenantNotFoundException
-import es.bdo.skeleton.tenant.application.security.TokenValidator
+import es.bdo.skeleton.tenant.application.security.UserInfo
 import es.bdo.skeleton.user.application.model.UserDTO
 import es.bdo.skeleton.user.application.usecase.GetAllUserUseCase
 import es.bdo.skeleton.user.application.usecase.RegisterUserUseCase
@@ -15,8 +15,7 @@ import org.springframework.web.bind.annotation.*
 @RequestMapping("/api/users")
 class UserController(
     private val getAllUserUseCase: GetAllUserUseCase,
-    private val registerUserUseCase: RegisterUserUseCase,
-    private val tokenValidator: TokenValidator
+    private val registerUserUseCase: RegisterUserUseCase
 ) {
 
     @GetMapping
@@ -30,7 +29,7 @@ class UserController(
     @ResponseStatus(HttpStatus.CREATED)
     fun register(authentication: Authentication): UserDTO? {
         val tenantId = TenantContext.tenantId ?: throw TenantNotFoundException()
-        val userInfo = tokenValidator.validateAndExtractUserInfo(authentication)
+        val userInfo = authentication.principal as UserInfo
 
         return registerUserUseCase.handle(
             RegisterUserUseCase.Params(
