@@ -5,6 +5,8 @@ import jakarta.persistence.Column
 import jakarta.persistence.Entity
 import jakarta.persistence.Id
 import jakarta.persistence.Table
+import org.hibernate.annotations.JdbcTypeCode
+import org.hibernate.type.SqlTypes
 import java.util.UUID
 
 @Entity
@@ -17,8 +19,9 @@ data class ConfigEntity(
     @Column(name = "tenant_id", nullable = false)
     val tenantId: String,
 
-    @Column(name = "allowed_domains", nullable = false, columnDefinition = "TEXT")
-    val allowedDomains: String,
+    @JdbcTypeCode(SqlTypes.ARRAY)
+    @Column(name = "allowed_domains", nullable = false)
+    val allowedDomains: List<String>,
 
     @Column(name = "primary_color")
     val primaryColor: String? = null,
@@ -34,7 +37,7 @@ fun ConfigEntity.toDomain(): Config {
     return Config(
         id,
         tenantId,
-        allowedDomains.split(",").map { it.trim() }.filter { it.isNotEmpty() },
+        allowedDomains,
         primaryColor,
         secondaryColor,
         logoUrl
