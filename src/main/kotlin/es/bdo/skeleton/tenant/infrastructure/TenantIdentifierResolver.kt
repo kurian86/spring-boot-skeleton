@@ -8,7 +8,7 @@ import org.springframework.stereotype.Component
 class TenantIdentifierResolver : CurrentTenantIdentifierResolver<String> {
 
     override fun resolveCurrentTenantIdentifier(): String {
-        return TenantContext.tenantId ?: TenantContext.DEFAULT_TENANT
+        return TenantContext.tenantId
     }
 
     override fun validateExistingCurrentSessions(): Boolean {
