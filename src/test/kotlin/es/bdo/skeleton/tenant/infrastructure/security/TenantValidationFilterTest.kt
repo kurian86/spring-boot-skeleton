@@ -1,9 +1,11 @@
 package es.bdo.skeleton.tenant.infrastructure.security
 
+import es.bdo.skeleton.tenant.application.TenantContext
 import es.bdo.skeleton.tenant.application.security.UserInfo
 import jakarta.servlet.FilterChain
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
+import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.*
@@ -29,33 +31,40 @@ class TenantValidationFilterTest {
         printWriter = mock()
         whenever(response.writer).thenReturn(printWriter)
         
-        // Clear security context before each test
+        // Clear security context and tenant context before each test
+        SecurityContextHolder.clearContext()
+    }
+
+    @AfterEach
+    fun tearDown() {
         SecurityContextHolder.clearContext()
     }
 
     @Test
-    fun `should allow request when JWT tenant matches header`() {
+    fun `should allow request when JWT tenant matches context tenant`() {
         // Given
         val userInfo = createUserInfo(tenantId = "default")
         setupAuthentication(userInfo)
-        whenever(request.getHeader("X-Tenant-ID")).thenReturn("default")
-
-        // When
-        filter.doFilter(request, response, filterChain)
+        
+        // Run in tenant context
+        TenantContext.withTenant("default") {
+            filter.doFilter(request, response, filterChain)
+        }
 
         // Then
         verify(filterChain).doFilter(request, response)
     }
 
     @Test
-    fun `should reject request when JWT tenant does not match header`() {
+    fun `should reject request when JWT tenant does not match context tenant`() {
         // Given
         val userInfo = createUserInfo(tenantId = "tenant-a")
         setupAuthentication(userInfo)
-        whenever(request.getHeader("X-Tenant-ID")).thenReturn("tenant-b")
-
-        // When
-        filter.doFilter(request, response, filterChain)
+        
+        // Run in different tenant context
+        TenantContext.withTenant("tenant-b") {
+            filter.doFilter(request, response, filterChain)
+        }
 
         // Then
         verify(response).status = 403
@@ -66,9 +75,10 @@ class TenantValidationFilterTest {
     fun `should allow request when no authentication`() {
         // Given - No authentication in context
         SecurityContextHolder.clearContext()
-
-        // When
-        filter.doFilter(request, response, filterChain)
+        
+        TenantContext.withTenant("default") {
+            filter.doFilter(request, response, filterChain)
+        }
 
         // Then
         verify(filterChain).doFilter(request, response)
@@ -80,9 +90,10 @@ class TenantValidationFilterTest {
         val auth = mock<Authentication>()
         whenever(auth.principal).thenReturn("some-other-principal")
         SecurityContextHolder.setContext(SecurityContextImpl(auth))
-
-        // When
-        filter.doFilter(request, response, filterChain)
+        
+        TenantContext.withTenant("default") {
+            filter.doFilter(request, response, filterChain)
+        }
 
         // Then
         verify(filterChain).doFilter(request, response)
@@ -99,23 +110,22 @@ class TenantValidationFilterTest {
             attributes = mapOf() // No tenant_id
         )
         setupAuthentication(userInfo)
-        whenever(request.getHeader("X-Tenant-ID")).thenReturn("default")
-
-        // When
-        filter.doFilter(request, response, filterChain)
+        
+        TenantContext.withTenant("default") {
+            filter.doFilter(request, response, filterChain)
+        }
 
         // Then
         verify(filterChain).doFilter(request, response)
     }
 
     @Test
-    fun `should allow request when no tenant header`() {
+    fun `should allow request when no tenant in context`() {
         // Given
         val userInfo = createUserInfo(tenantId = "default")
         setupAuthentication(userInfo)
-        whenever(request.getHeader("X-Tenant-ID")).thenReturn(null)
-
-        // When
+        
+        // No tenant context set - filter should still work
         filter.doFilter(request, response, filterChain)
 
         // Then
