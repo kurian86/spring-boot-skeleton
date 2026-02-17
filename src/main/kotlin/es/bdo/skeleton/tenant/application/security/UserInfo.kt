@@ -14,13 +14,17 @@ data class UserInfo(
             val username = extractUsername(attributes)
             val email = attributes["email"] as? String ?: ""
             val issuer = attributes["iss"] as? String ?: ""
+            val name = attributes["name"] as? String ?: username
+
+            // Ensure name is included in attributes for auto-registration
+            val enrichedAttributes = attributes + ("name" to name)
 
             return UserInfo(
                 subject = subject,
                 username = username,
                 email = email,
                 issuer = issuer,
-                attributes = attributes
+                attributes = enrichedAttributes
             )
         }
 
