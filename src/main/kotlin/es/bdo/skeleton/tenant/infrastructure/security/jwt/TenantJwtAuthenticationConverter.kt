@@ -16,7 +16,7 @@ class TenantJwtAuthenticationConverter(
 
     override fun convert(jwt: Jwt): AbstractAuthenticationToken {
         val userInfo = extractUserInfo(jwt)
-        val authorities = extractAuthorities(jwt, userInfo.email)
+        val authorities = extractAuthorities(jwt)
 
         return TenantJwtAuthenticationToken(jwt, authorities, userInfo)
     }
@@ -25,13 +25,19 @@ class TenantJwtAuthenticationConverter(
         return UserInfo.fromAttributes(jwt.claims)
     }
 
-    private fun extractAuthorities(jwt: Jwt, email: String): Collection<GrantedAuthority> {
-        val userAuthorities = userProvider.findUserAuthoritiesByEmail(email)
-            .map { SimpleGrantedAuthority(it) }
-
+    private fun extractAuthorities(jwt: Jwt): Collection<GrantedAuthority> {
         val authorities = mutableSetOf<GrantedAuthority>()
+
+        // Add standard JWT authorities
         authorities.addAll(grantedAuthoritiesConverter.convert(jwt) ?: emptySet())
-        authorities.addAll(userAuthorities)
+
+        // Add roles from JWT claim
+        val roles = jwt.getClaimAsStringList("roles")
+        roles?.forEach { role ->
+            val authority = if (role.startsWith("ROLE_")) role else "ROLE_$role"
+            authorities.add(SimpleGrantedAuthority(authority))
+        }
+
         return authorities
     }
 }
