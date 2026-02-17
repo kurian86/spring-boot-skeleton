@@ -1,6 +1,7 @@
 package es.bdo.skeleton.tenant.infrastructure.security
 
 import es.bdo.skeleton.tenant.application.TenantContext
+import es.bdo.skeleton.tenant.application.exception.TenantMismatchException
 import es.bdo.skeleton.tenant.application.security.UserInfo
 import jakarta.servlet.FilterChain
 import jakarta.servlet.http.HttpServletRequest
@@ -8,11 +9,11 @@ import jakarta.servlet.http.HttpServletResponse
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 import org.mockito.kotlin.*
 import org.springframework.security.core.Authentication
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.security.core.context.SecurityContextImpl
-import java.io.PrintWriter
 
 class TenantValidationFilterTest {
 
@@ -20,7 +21,6 @@ class TenantValidationFilterTest {
     private lateinit var request: HttpServletRequest
     private lateinit var response: HttpServletResponse
     private lateinit var filterChain: FilterChain
-    private lateinit var printWriter: PrintWriter
 
     @BeforeEach
     fun setUp() {
@@ -28,8 +28,6 @@ class TenantValidationFilterTest {
         request = mock()
         response = mock()
         filterChain = mock()
-        printWriter = mock()
-        whenever(response.writer).thenReturn(printWriter)
         
         // Clear security context and tenant context before each test
         SecurityContextHolder.clearContext()
@@ -56,19 +54,21 @@ class TenantValidationFilterTest {
     }
 
     @Test
-    fun `should reject request when JWT tenant does not match context tenant`() {
+    fun `should throw TenantMismatchException when JWT tenant does not match context tenant`() {
         // Given
         val userInfo = createUserInfo(tenantId = "tenant-a")
         setupAuthentication(userInfo)
         
-        // Run in different tenant context
-        TenantContext.withTenant("tenant-b") {
-            filter.doFilter(request, response, filterChain)
+        // When/Then - Should throw exception when tenants don't match
+        val exception = assertThrows<TenantMismatchException> {
+            TenantContext.withTenant("tenant-b") {
+                filter.doFilter(request, response, filterChain)
+            }
         }
-
-        // Then
-        verify(response).status = 403
-        verify(filterChain, never()).doFilter(any(), any())
+        
+        // Verify exception contains correct info
+        assert(exception.jwtTenantId == "tenant-a")
+        assert(exception.contextTenantId == "tenant-b")
     }
 
     @Test

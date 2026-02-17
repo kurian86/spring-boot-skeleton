@@ -1,6 +1,7 @@
 package es.bdo.skeleton.shared.exception
 
 import es.bdo.skeleton.tenant.application.exception.InvalidTokenException
+import es.bdo.skeleton.tenant.application.exception.TenantMismatchException
 import es.bdo.skeleton.tenant.application.exception.TenantNotConfiguredException
 import es.bdo.skeleton.tenant.application.exception.TenantNotFoundException
 import org.springframework.http.HttpStatus
@@ -46,6 +47,19 @@ class GlobalExceptionHandler {
                     status = HttpStatus.UNAUTHORIZED.value(),
                     error = "Unauthorized",
                     message = ex.message ?: "Invalid authentication token"
+                )
+            )
+    }
+
+    @ExceptionHandler(TenantMismatchException::class)
+    fun handleTenantMismatch(ex: TenantMismatchException): ResponseEntity<ErrorResponse> {
+        return ResponseEntity
+            .status(HttpStatus.FORBIDDEN)
+            .body(
+                ErrorResponse(
+                    status = HttpStatus.FORBIDDEN.value(),
+                    error = "Forbidden",
+                    message = ex.message ?: "Tenant mismatch"
                 )
             )
     }
