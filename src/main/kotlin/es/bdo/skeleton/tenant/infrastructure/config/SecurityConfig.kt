@@ -1,6 +1,7 @@
 package es.bdo.skeleton.tenant.infrastructure.config
 
 import es.bdo.skeleton.tenant.infrastructure.security.TenantContextFilter
+import es.bdo.skeleton.tenant.infrastructure.security.TenantValidationFilter
 import es.bdo.skeleton.tenant.infrastructure.security.jwt.TenantJwtAuthenticationConverter
 import es.bdo.skeleton.user.application.UserRegistrationService
 import org.springframework.context.annotation.Bean
@@ -29,6 +30,7 @@ class SecurityConfig {
     fun securityFilterChain(
         http: HttpSecurity,
         tenantContextFilter: TenantContextFilter,
+        tenantValidationFilter: TenantValidationFilter,
         jwtAuthenticationConverter: Converter<Jwt, out AbstractAuthenticationToken>
     ): SecurityFilterChain {
         http
@@ -37,6 +39,7 @@ class SecurityConfig {
                 it.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
             }
             .addFilterBefore(tenantContextFilter, BearerTokenAuthenticationFilter::class.java)
+            .addFilterAfter(tenantValidationFilter, BearerTokenAuthenticationFilter::class.java)
             .authorizeHttpRequests { auth ->
                 auth
                     .requestMatchers("/actuator/health", "/actuator/info").permitAll()
