@@ -1,12 +1,9 @@
 services:
   db:
     image: postgres:18.1-alpine
-    environment:
-      POSTGRES_USER: user
-      POSTGRES_PASSWORD: password
-      POSTGRES_DB: catalog
+    env_file: .db.env
     volumes:
-      - db_data:/var/lib/postgresql
+      - db_data:/var/lib/postgresql:rw
     healthcheck:
       test: [ "CMD-SHELL", "pg_isready -U user -d catalog" ]
       interval: 10s
@@ -18,7 +15,42 @@ services:
       - "5432:5432"
     restart: unless-stopped
 
+  auth:
+    image: ghcr.io/zitadel/zitadel:v4.11.0
+    command: start-from-init --masterkey "MasterkeyNeedsToHave32Characters"
+    depends_on:
+      db:
+        condition: service_healthy
+    env_file: .zitadel.env
+    volumes:
+      - auth_data:/current-dir:delegated
+    healthcheck:
+      test: [ "CMD", "/app/zitadel", "ready" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    networks:
+      - backend
+    ports:
+      - "8080:8080"
+      - "3000:3000"
+    restart: unless-stopped
+
+  login:
+    image: ghcr.io/zitadel/zitadel-login:v4.11.0
+    depends_on:
+      auth:
+        condition: service_healthy
+        restart: false
+    env_file: .login.env
+    volumes:
+      - auth_data:/current-dir:ro
+    network_mode: service:auth
+    restart: unless-stopped
+
 volumes:
+  auth_data:
   db_data:
 
 networks:
