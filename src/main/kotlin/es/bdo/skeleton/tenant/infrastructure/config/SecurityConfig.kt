@@ -2,7 +2,7 @@ package es.bdo.skeleton.tenant.infrastructure.config
 
 import es.bdo.skeleton.tenant.infrastructure.security.TenantContextFilter
 import es.bdo.skeleton.tenant.infrastructure.security.jwt.TenantJwtAuthenticationConverter
-import es.bdo.skeleton.user.domain.UserRepository
+import es.bdo.skeleton.user.application.UserRegistrationService
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.core.convert.converter.Converter
@@ -21,8 +21,8 @@ import org.springframework.security.web.SecurityFilterChain
 class SecurityConfig {
 
     @Bean
-    fun jwtAuthenticationConverter(userRepository: UserRepository): Converter<Jwt, AbstractAuthenticationToken> {
-        return TenantJwtAuthenticationConverter(userRepository)
+    fun jwtAuthenticationConverter(userRegistrationService: UserRegistrationService): Converter<Jwt, AbstractAuthenticationToken> {
+        return TenantJwtAuthenticationConverter(userRegistrationService)
     }
 
     @Bean
