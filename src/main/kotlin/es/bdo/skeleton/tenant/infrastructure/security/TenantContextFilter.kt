@@ -6,13 +6,10 @@ import es.bdo.skeleton.tenant.domain.TenantRepository
 import jakarta.servlet.FilterChain
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
-import org.springframework.core.Ordered
-import org.springframework.core.annotation.Order
 import org.springframework.stereotype.Component
 import org.springframework.web.filter.OncePerRequestFilter
 
 @Component
-@Order(Ordered.HIGHEST_PRECEDENCE)
 class TenantContextFilter(
     private val repository: TenantRepository,
 ) : OncePerRequestFilter() {
@@ -35,7 +32,7 @@ class TenantContextFilter(
 
     private fun extractAndValidateTenantId(request: HttpServletRequest): String {
         val tenantId = request.getHeader(TENANT_HEADER) ?: TenantContext.DEFAULT_TENANT
-        
+
         if (tenantId.isBlank()) {
             throw TenantNotFoundException("Tenant ID cannot be blank")
         }

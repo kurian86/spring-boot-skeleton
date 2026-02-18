@@ -23,6 +23,7 @@ repositories {
 }
 
 val springModulithVersion = project.properties["springModulithVersion"] as String
+val uuidVersion = project.properties["uuidVersion"] as String
 
 dependencies {
     implementation("org.springframework.boot:spring-boot-starter-cache")
@@ -37,6 +38,7 @@ dependencies {
     implementation("org.springframework.modulith:spring-modulith-starter-jpa")
     implementation("tools.jackson.module:jackson-module-kotlin")
     implementation("com.github.ben-manes.caffeine:caffeine")
+    implementation("com.fasterxml.uuid:java-uuid-generator:${uuidVersion}")
     runtimeOnly("org.postgresql:postgresql")
     testImplementation("org.springframework.boot:spring-boot-starter-cache-test")
     testImplementation("org.springframework.boot:spring-boot-starter-data-jpa-test")

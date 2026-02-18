@@ -1,7 +1,6 @@
 CREATE TABLE tenants_config (
     id                UUID PRIMARY KEY,
     tenant_id         VARCHAR(50) NOT NULL UNIQUE REFERENCES tenants(id) ON DELETE CASCADE,
-    allowed_domains   TEXT[]      NOT NULL,
     primary_color     VARCHAR(7),
     secondary_color   VARCHAR(7),
     logo_url          VARCHAR(500),
@@ -12,19 +11,16 @@ CREATE TABLE tenants_config (
 CREATE INDEX idx_tenants_config_tenant_id ON tenants_config(tenant_id);
 
 COMMENT ON TABLE tenants_config IS 'Tenant-specific configuration for registration domain validation and UI customization';
-COMMENT ON COLUMN tenants_config.allowed_domains IS 'Email domains allowed to register for this tenant (e.g., [''example.com'', ''acme.org''])';
 
 INSERT INTO tenants_config (
     id,
     tenant_id,
-    allowed_domains,
     primary_color,
     secondary_color
 )
 VALUES (
     '019c660d-9919-7119-8423-f8ec56b5667b',
     'default',
-    ARRAY['example.com', 'localhost'],
     '#3498DB',
     '#2ECC71'
 );

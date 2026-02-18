@@ -3,6 +3,7 @@ CREATE TABLE users (
     name            VARCHAR(100) NOT NULL,
     email           VARCHAR(320) NOT NULL,
     status          VARCHAR(20)  NOT NULL DEFAULT 'ACTIVE',
+    external_id     VARCHAR(255),
     created_at      TIMESTAMPTZ  NOT NULL DEFAULT NOW(),
     updated_at      TIMESTAMPTZ  NOT NULL DEFAULT NOW(),
     CONSTRAINT users_email_unique UNIQUE (email)

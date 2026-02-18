@@ -10,21 +10,24 @@ import org.springframework.security.oauth2.jwt.Jwt
 import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter
 
 class TenantJwtAuthenticationConverter(
-    private val userRegistrationService: UserRegistrationService,
-    private val grantedAuthoritiesConverter: JwtGrantedAuthoritiesConverter = JwtGrantedAuthoritiesConverter(),
+    private val userRegistrationService: UserRegistrationService
 ) : Converter<Jwt, AbstractAuthenticationToken> {
+
+    private val grantedAuthoritiesConverter: JwtGrantedAuthoritiesConverter = JwtGrantedAuthoritiesConverter().apply {
+        setAuthorityPrefix("ROLE_")
+        setAuthoritiesClaimName("roles")
+    }
 
     override fun convert(jwt: Jwt): AbstractAuthenticationToken {
         val userInfo = extractUserInfo(jwt)
+        val authorities = extractAuthorities(jwt)
 
-        // Auto-register user if doesn't exist
         userRegistrationService.ensureUserExists(
-            email = userInfo.email,
-            name = userInfo.attributes["name"] as? String ?: userInfo.username,
-            externalId = userInfo.subject
+            userInfo.email,
+            userInfo.attributes["name"] as? String ?: userInfo.username,
+            userInfo.subject
         )
 
-        val authorities = extractAuthorities(jwt)
         return TenantJwtAuthenticationToken(jwt, authorities, userInfo)
     }
 
@@ -33,18 +36,8 @@ class TenantJwtAuthenticationConverter(
     }
 
     private fun extractAuthorities(jwt: Jwt): Collection<GrantedAuthority> {
-        val authorities = mutableSetOf<GrantedAuthority>()
-
-        // Add standard JWT authorities
-        authorities.addAll(grantedAuthoritiesConverter.convert(jwt) ?: emptySet())
-
-        // Add roles from JWT claim
-        val roles = jwt.getClaimAsStringList("roles")
-        roles?.forEach { role ->
-            val authority = if (role.startsWith("ROLE_")) role else "ROLE_$role"
-            authorities.add(SimpleGrantedAuthority(authority))
+        return grantedAuthoritiesConverter.convert(jwt).mapNotNull {
+            it.authority?.let { SimpleGrantedAuthority(it.uppercase()) }
         }
-
-        return authorities
     }
 }
