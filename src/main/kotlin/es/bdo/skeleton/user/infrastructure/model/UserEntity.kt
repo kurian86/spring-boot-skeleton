@@ -34,21 +34,21 @@ data class UserEntity(
 )
 
 fun UserEntity.toDomain() = User(
-    id = id,
-    name = name,
-    email = email,
-    status = status,
-    externalId = externalId,
-    createdAt = createdAt,
-    updatedAt = updatedAt,
+    id,
+    name,
+    email,
+    status,
+    externalId,
+    createdAt,
+    updatedAt,
 )
 
 fun User.toEntity() = UserEntity(
-    id = id,
-    name = name,
-    email = email,
-    status = status,
-    externalId = externalId,
-    createdAt = createdAt,
-    updatedAt = updatedAt,
+    id,
+    name,
+    email,
+    status,
+    externalId,
+    createdAt,
+    updatedAt,
 )

@@ -69,8 +69,8 @@ spring:
     oauth2:
       resourceserver:
         jwt:
-          issuer-uri: http://localhost:8080
-          jwk-set-uri: http://localhost:8080/oauth/v2/keys
+          issuer-uri: http://localhost:8081
+          jwk-set-uri: http://localhost:8081/oauth/v2/keys
 
   sql:
     init:
@@ -79,9 +79,6 @@ spring:
   threads:
     virtual:
       enabled: true
-
-server:
-  port: 8081
 
 logging:
   level:
