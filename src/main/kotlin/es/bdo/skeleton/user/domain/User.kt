@@ -8,6 +8,7 @@ data class User(
     val name: String,
     val email: String,
     val status: UserStatus = UserStatus.ACTIVE,
+    val externalId: String? = null,
     val createdAt: ZonedDateTime = ZonedDateTime.now(),
     val updatedAt: ZonedDateTime = ZonedDateTime.now(),
 )

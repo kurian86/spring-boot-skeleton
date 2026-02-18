@@ -1,7 +1,7 @@
 package es.bdo.skeleton.tenant.infrastructure.security.jwt
 
-import es.bdo.skeleton.tenant.infrastructure.security.jwt.TenantJwtAuthenticationToken
-import es.bdo.skeleton.user.application.UserProvider
+import es.bdo.skeleton.tenant.application.security.UserInfo
+import es.bdo.skeleton.user.application.UserRegistrationService
 import org.springframework.core.convert.converter.Converter
 import org.springframework.security.authentication.AbstractAuthenticationToken
 import org.springframework.security.core.GrantedAuthority
@@ -10,25 +10,34 @@ import org.springframework.security.oauth2.jwt.Jwt
 import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter
 
 class TenantJwtAuthenticationConverter(
-    private val userInfoExtractorResolver: UserInfoExtractorResolver,
-    private val userProvider: UserProvider,
-    private val grantedAuthoritiesConverter: JwtGrantedAuthoritiesConverter = JwtGrantedAuthoritiesConverter(),
+    private val userRegistrationService: UserRegistrationService
 ) : Converter<Jwt, AbstractAuthenticationToken> {
 
+    private val grantedAuthoritiesConverter: JwtGrantedAuthoritiesConverter = JwtGrantedAuthoritiesConverter().apply {
+        setAuthorityPrefix("ROLE_")
+        setAuthoritiesClaimName("roles")
+    }
+
     override fun convert(jwt: Jwt): AbstractAuthenticationToken {
-        val userInfo = userInfoExtractorResolver.extractUserInfo(jwt)
-        val authorities = extractAuthorities(jwt, userInfo.email)
+        val userInfo = extractUserInfo(jwt)
+        val authorities = extractAuthorities(jwt)
+
+        userRegistrationService.ensureUserExists(
+            userInfo.email,
+            userInfo.attributes["name"] as? String ?: userInfo.username,
+            userInfo.subject
+        )
 
         return TenantJwtAuthenticationToken(jwt, authorities, userInfo)
     }
 
-    private fun extractAuthorities(jwt: Jwt, email: String): Collection<GrantedAuthority> {
-        val userAuthorities = userProvider.findUserAuthoritiesByEmail(email)
-            .map { SimpleGrantedAuthority(it) }
+    private fun extractUserInfo(jwt: Jwt): UserInfo {
+        return UserInfo.fromAttributes(jwt.claims)
+    }
 
-        val authorities = mutableSetOf<GrantedAuthority>()
-        authorities.addAll(grantedAuthoritiesConverter.convert(jwt) ?: emptySet())
-        authorities.addAll(userAuthorities)
-        return authorities
+    private fun extractAuthorities(jwt: Jwt): Collection<GrantedAuthority> {
+        return grantedAuthoritiesConverter.convert(jwt).mapNotNull {
+            it.authority?.let { SimpleGrantedAuthority(it.uppercase()) }
+        }
     }
 }

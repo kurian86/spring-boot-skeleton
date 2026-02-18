@@ -23,6 +23,9 @@ data class UserEntity(
     @Column(name = "status", nullable = false)
     val status: UserStatus = UserStatus.ACTIVE,
 
+    @Column(name = "external_id")
+    val externalId: String? = null,
+
     @Column(name = "created_at", nullable = false)
     val createdAt: ZonedDateTime = ZonedDateTime.now(),
 
@@ -35,6 +38,7 @@ fun UserEntity.toDomain() = User(
     name,
     email,
     status,
+    externalId,
     createdAt,
     updatedAt,
 )
@@ -44,6 +48,7 @@ fun User.toEntity() = UserEntity(
     name,
     email,
     status,
+    externalId,
     createdAt,
     updatedAt,
 )
