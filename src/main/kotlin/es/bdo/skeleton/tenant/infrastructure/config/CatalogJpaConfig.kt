@@ -1,7 +1,5 @@
 package es.bdo.skeleton.tenant.infrastructure.config
 
-import es.bdo.skeleton.tenant.infrastructure.model.ConfigEntity
-import es.bdo.skeleton.tenant.infrastructure.model.TenantEntity
 import jakarta.persistence.EntityManagerFactory
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.boot.jpa.EntityManagerFactoryBuilder
@@ -28,7 +26,10 @@ class CatalogJpaConfig {
     @Bean
     @Primary
     fun catalogManagedTypes(): PersistenceManagedTypes =
-        PersistenceManagedTypes.of(TenantEntity::class.java.name, ConfigEntity::class.java.name)
+        PersistenceManagedTypes.of(
+            "es.bdo.skeleton.tenant.infrastructure.model.ConfigEntity",
+            "es.bdo.skeleton.tenant.infrastructure.model.TenantEntity"
+        )
 
     @Bean
     @Primary

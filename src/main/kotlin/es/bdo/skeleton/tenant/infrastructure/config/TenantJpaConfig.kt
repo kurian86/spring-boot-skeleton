@@ -28,8 +28,8 @@ class TenantJpaConfig {
     @Bean
     fun tenantManagedTypes(): PersistenceManagedTypes =
         PersistenceManagedTypes.of(
-            "es.bdo.skeleton.user.infrastructure.model.UserEntity",
-            "es.bdo.skeleton.absence.infrastructure.model.AbsenceEntity"
+            "es.bdo.skeleton.absence.infrastructure.model.AbsenceEntity",
+            "es.bdo.skeleton.user.infrastructure.model.UserEntity"
         )
 
     @Bean
