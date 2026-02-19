@@ -16,11 +16,21 @@ class GetAllUserQueryHandler(
     @TenantTransactional(readOnly = true)
     override fun handle(query: GetAllUserQuery): Result<PaginationResult<UserDTO>> {
         return runCatching {
-            val total = repository.count()
-            val items = repository.findAll()
+            val offset = query.pageable.offset
+            val limit = query.pageable.pageSize
+            val sort = query.sort
+            val filters = query.filters
+
+            val total = repository.count(filters)
+            val items = repository.findAll(offset, limit, sort, filters)
                 .map { it.toDTO() }
 
-            PaginationResult.from(total, items)
+            PaginationResult.from(
+                totalCount = total,
+                items = items,
+                offset = offset,
+                limit = limit
+            )
         }
     }
 }
