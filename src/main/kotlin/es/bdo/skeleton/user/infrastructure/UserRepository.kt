@@ -16,10 +16,6 @@ class UserRepository(
     private val filterSpecification: UserFilterSpecification
 ) : IUserRepository {
 
-    override fun count(): Long {
-        return jpaRepository.count()
-    }
-
     override fun count(filters: List<FilterGroup>): Long {
         val spec = filterSpecification.toSpecification(filters)
         return if (spec != null) {
@@ -27,11 +23,6 @@ class UserRepository(
         } else {
             jpaRepository.count()
         }
-    }
-
-    override fun findAll(): List<User> {
-        return jpaRepository.findAll()
-            .map { it.toDomain() }
     }
 
     override fun findAll(

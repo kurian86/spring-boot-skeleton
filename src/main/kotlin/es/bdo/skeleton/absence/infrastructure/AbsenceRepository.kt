@@ -7,6 +7,7 @@ import es.bdo.skeleton.shared.model.Sort
 import org.springframework.data.domain.PageRequest
 import org.springframework.stereotype.Repository
 import es.bdo.skeleton.absence.domain.AbsenceRepository as IAbsenceRepository
+import org.springframework.data.domain.Sort as SpringSort
 
 @Repository
 class AbsenceRepository(
@@ -34,8 +35,8 @@ class AbsenceRepository(
             .map { it.toDomain() }
     }
 
-    private fun buildSpringSort(sort: Sort?): org.springframework.data.domain.Sort {
-        if (sort == null) return org.springframework.data.domain.Sort.unsorted()
-        return org.springframework.data.domain.Sort.by(sort.direction, sort.property)
+    private fun buildSpringSort(sort: Sort?): SpringSort {
+        if (sort == null) return SpringSort.unsorted()
+        return SpringSort.by(sort.direction, sort.property)
     }
 }

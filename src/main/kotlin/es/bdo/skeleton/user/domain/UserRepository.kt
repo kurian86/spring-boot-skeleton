@@ -4,10 +4,8 @@ import es.bdo.skeleton.shared.model.FilterGroup
 import es.bdo.skeleton.shared.model.Sort
 
 interface UserRepository {
-    fun count(): Long
     fun count(filters: List<FilterGroup>): Long
 
-    fun findAll(): List<User>
     fun findAll(offset: Long, limit: Int, sort: Sort?, filters: List<FilterGroup>): List<User>
 
     fun findByEmail(email: String): User?
