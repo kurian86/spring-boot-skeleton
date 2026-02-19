@@ -1,7 +1,11 @@
 package es.bdo.skeleton.user.infrastructure
 
+import es.bdo.skeleton.shared.model.Filter
+import es.bdo.skeleton.shared.model.FilterGroup
+import es.bdo.skeleton.shared.model.Operator
 import es.bdo.skeleton.user.domain.UserStatus
 import es.bdo.skeleton.user.infrastructure.model.UserEntity
+import es.bdo.skeleton.user.infrastructure.specification.UserFilterSpecification
 import jakarta.persistence.EntityManagerFactory
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
@@ -57,10 +61,23 @@ class UserRepositorySliceTest {
             tenantEntityManagerFactory: EntityManagerFactory
         ): PlatformTransactionManager =
             JpaTransactionManager(tenantEntityManagerFactory)
+
+        @Bean
+        fun userFilterSpecification() = UserFilterSpecification()
+
+        @Bean
+        fun userRepository(
+            jpaRepository: UserJpaRepository,
+            filterSpecification: UserFilterSpecification
+        ): es.bdo.skeleton.user.domain.UserRepository =
+            UserRepository(jpaRepository, filterSpecification)
     }
 
     @Autowired
     private lateinit var jpaRepository: UserJpaRepository
+
+    @Autowired
+    private lateinit var userRepository: es.bdo.skeleton.user.domain.UserRepository
 
     @BeforeEach
     fun setUp() {
@@ -71,9 +88,10 @@ class UserRepositorySliceTest {
         email: String = "alice@example.com",
         status: UserStatus = UserStatus.ACTIVE,
         externalId: String? = null,
+        name: String = "Alice",
     ) = UserEntity(
         id = UUID.randomUUID(),
-        name = "Alice",
+        name = name,
         email = email,
         status = status,
         externalId = externalId,
@@ -232,5 +250,79 @@ class UserRepositorySliceTest {
 
         // Assert
         assertThat(result).isEmpty
+    }
+
+    // --- findAll with filters ---
+
+    @Test
+    fun `findAll with EQUALITY filter on status should return filtered users`() {
+        // Arrange
+        val user1 = entity(email = "active@example.com", status = UserStatus.ACTIVE)
+        val user2 = entity(email = "disabled@example.com", status = UserStatus.DISABLED)
+        jpaRepository.save(user1)
+        jpaRepository.save(user2)
+
+        val filters = listOf(
+            FilterGroup(
+                filters = listOf(
+                    Filter(property = "status", value = "ACTIVE", operator = Operator.EQUALITY)
+                )
+            )
+        )
+
+        // Act
+        val (total, items) = userRepository.findAll(0, 10, null, filters)
+
+        // Assert
+        assertThat(total).isEqualTo(1L)
+        assertThat(items).hasSize(1)
+        assertThat(items[0].status).isEqualTo(UserStatus.ACTIVE)
+    }
+
+    @Test
+    fun `findAll with LIKE filter on name should return matching users`() {
+        // Arrange
+        val user1 = entity(email = "john@example.com", name = "John Doe")
+        val user2 = entity(email = "jane@example.com", name = "Jane Smith")
+        jpaRepository.save(user1)
+        jpaRepository.save(user2)
+
+        val filters = listOf(
+            FilterGroup(
+                filters = listOf(
+                    Filter(property = "name", value = "John", operator = Operator.LIKE)
+                )
+            )
+        )
+
+        // Act
+        val (total, items) = userRepository.findAll(0, 10, null, filters)
+
+        // Assert
+        assertThat(total).isEqualTo(1L)
+        assertThat(items).hasSize(1)
+        assertThat(items[0].name).isEqualTo("John Doe")
+    }
+
+    @Test
+    fun `findAll totalCount reflects all matching records across pages`() {
+        // Arrange
+        jpaRepository.save(entity(email = "active1@example.com", status = UserStatus.ACTIVE))
+        jpaRepository.save(entity(email = "active2@example.com", status = UserStatus.ACTIVE))
+        jpaRepository.save(entity(email = "disabled@example.com", status = UserStatus.DISABLED))
+
+        val filters = listOf(
+            FilterGroup(
+                filters = listOf(
+                    Filter(property = "status", value = "ACTIVE", operator = Operator.EQUALITY)
+                )
+            )
+        )
+
+        // Act
+        val (total, _) = userRepository.findAll(0, 10, null, filters)
+
+        // Assert
+        assertThat(total).isEqualTo(2L)
     }
 }

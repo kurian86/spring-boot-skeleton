@@ -14,10 +14,20 @@ class GetAllAbsencesQueryHandler(
 
     override fun handle(query: GetAllAbsencesQuery): Result<PaginationResult<AbsenceDTO>> {
         return runCatching {
-            val total = repository.count()
-            val items = repository.findAll().map { it.toDTO() }
+            val offset = query.pageable.offset
+            val limit = query.pageable.pageSize
+            val sort = query.sort
+            val filters = query.filters
 
-            PaginationResult(total, items)
+            val (total, items) = repository.findAll(offset, limit, sort, filters)
+                .let { (total, absences) -> total to absences.map { it.toDTO() } }
+
+            PaginationResult.from(
+                totalCount = total,
+                items = items,
+                offset = offset,
+                limit = limit
+            )
         }
     }
 }

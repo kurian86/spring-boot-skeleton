@@ -1,9 +1,10 @@
 package es.bdo.skeleton.user.domain
 
-interface UserRepository {
-    fun count(): Long
+import es.bdo.skeleton.shared.model.FilterGroup
+import es.bdo.skeleton.shared.model.Sort
 
-    fun findAll(): List<User>
+interface UserRepository {
+    fun findAll(offset: Long, limit: Int, sort: Sort?, filters: List<FilterGroup>): Pair<Long, List<User>>
 
     fun findByEmail(email: String): User?
 

@@ -1,5 +1,9 @@
 package es.bdo.skeleton.user.application.query
 
+import es.bdo.skeleton.shared.model.Filter
+import es.bdo.skeleton.shared.model.FilterGroup
+import es.bdo.skeleton.shared.model.Operator
+import es.bdo.skeleton.shared.request.OffsetLimitPageable
 import es.bdo.skeleton.user.application.model.UserStatusDTO
 import es.bdo.skeleton.user.domain.User
 import es.bdo.skeleton.user.domain.UserRepository
@@ -7,6 +11,7 @@ import es.bdo.skeleton.user.domain.UserStatus
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.mock
+import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import java.time.ZonedDateTime
 import java.util.UUID
@@ -28,8 +33,7 @@ class GetAllUserQueryHandlerTest {
     @Test
     fun `handle returns empty PaginationResult when repository is empty`() {
         // Arrange
-        whenever(repository.count()).thenReturn(0L)
-        whenever(repository.findAll()).thenReturn(emptyList())
+        whenever(repository.findAll(0, 10, null, emptyList())).thenReturn(0L to emptyList())
 
         // Act
         val result = handler.handle(GetAllUserQuery()).getOrThrow()
@@ -42,8 +46,7 @@ class GetAllUserQueryHandlerTest {
     @Test
     fun `handle returns correct totalCount`() {
         // Arrange
-        whenever(repository.count()).thenReturn(3L)
-        whenever(repository.findAll()).thenReturn(listOf(user(), user(), user()))
+        whenever(repository.findAll(0, 10, null, emptyList())).thenReturn(3L to listOf(user(), user(), user()))
 
         // Act
         val result = handler.handle(GetAllUserQuery()).getOrThrow()
@@ -56,8 +59,7 @@ class GetAllUserQueryHandlerTest {
     fun `handle maps users to DTOs`() {
         // Arrange
         val u = user("Bob")
-        whenever(repository.count()).thenReturn(1L)
-        whenever(repository.findAll()).thenReturn(listOf(u))
+        whenever(repository.findAll(0, 10, null, emptyList())).thenReturn(1L to listOf(u))
 
         // Act
         val result = handler.handle(GetAllUserQuery()).getOrThrow()
@@ -72,8 +74,7 @@ class GetAllUserQueryHandlerTest {
     @Test
     fun `handle sets roles to ROLE_USER for every user`() {
         // Arrange
-        whenever(repository.count()).thenReturn(2L)
-        whenever(repository.findAll()).thenReturn(listOf(user(), user()))
+        whenever(repository.findAll(0, 10, null, emptyList())).thenReturn(2L to listOf(user(), user()))
 
         // Act
         val result = handler.handle(GetAllUserQuery()).getOrThrow()
@@ -87,7 +88,7 @@ class GetAllUserQueryHandlerTest {
     @Test
     fun `handle returns Result failure when repository throws`() {
         // Arrange
-        whenever(repository.count()).thenThrow(RuntimeException("DB error"))
+        whenever(repository.findAll(0, 10, null, emptyList())).thenThrow(RuntimeException("DB error"))
 
         // Act
         val result = handler.handle(GetAllUserQuery())
@@ -100,13 +101,58 @@ class GetAllUserQueryHandlerTest {
     @Test
     fun `handle items count matches list size`() {
         // Arrange
-        whenever(repository.count()).thenReturn(2L)
-        whenever(repository.findAll()).thenReturn(listOf(user(), user()))
+        whenever(repository.findAll(0, 10, null, emptyList())).thenReturn(2L to listOf(user(), user()))
 
         // Act
         val result = handler.handle(GetAllUserQuery()).getOrThrow()
 
         // Assert
         assertThat(result.items).hasSize(2)
+    }
+
+    @Test
+    fun `handle with pagination should call repository with correct parameters`() {
+        // Arrange
+        val offset = 0L
+        val limit = 10
+        val query = GetAllUserQuery(
+            pageable = OffsetLimitPageable(offset = offset, limit = limit),
+            sort = null,
+            filters = emptyList()
+        )
+        whenever(repository.findAll(offset, limit, null, emptyList())).thenReturn(100L to emptyList())
+
+        // Act
+        handler.handle(query)
+
+        // Assert
+        verify(repository).findAll(offset, limit, null, emptyList())
+    }
+
+    @Test
+    fun `handle with filters should call repository with filters`() {
+        // Arrange
+        val filters = listOf(
+            FilterGroup(
+                filters = listOf(
+                    Filter(property = "status", value = "ACTIVE", operator = Operator.EQUALITY)
+                )
+            )
+        )
+        val query = GetAllUserQuery(
+            pageable = OffsetLimitPageable(0),
+            sort = null,
+            filters = filters
+        )
+        val u = user("John")
+        whenever(repository.findAll(0, 10, null, filters)).thenReturn(1L to listOf(u))
+
+        // Act
+        val result = handler.handle(query).getOrThrow()
+
+        // Assert
+        assertThat(result.items).hasSize(1)
+        assertThat(result.totalCount).isEqualTo(1)
+        verify(repository).findAll(0, 10, null, filters)
     }
 }
