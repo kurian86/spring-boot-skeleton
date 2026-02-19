@@ -9,6 +9,7 @@ import org.springframework.context.annotation.Primary
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories
 import org.springframework.orm.jpa.JpaTransactionManager
 import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean
+import org.springframework.orm.jpa.persistenceunit.PersistenceManagedTypes
 import org.springframework.transaction.PlatformTransactionManager
 import org.springframework.transaction.annotation.EnableTransactionManagement
 import javax.sql.DataSource
@@ -24,13 +25,22 @@ class CatalogJpaConfig {
 
     @Bean
     @Primary
+    fun catalogManagedTypes(): PersistenceManagedTypes =
+        PersistenceManagedTypes.of(
+            "es.bdo.skeleton.tenant.infrastructure.model.ConfigEntity",
+            "es.bdo.skeleton.tenant.infrastructure.model.TenantEntity"
+        )
+
+    @Bean
+    @Primary
     fun catalogEntityManagerFactory(
         builder: EntityManagerFactoryBuilder,
-        dataSource: DataSource
+        dataSource: DataSource,
+        @Qualifier("catalogManagedTypes") managedTypes: PersistenceManagedTypes
     ): LocalContainerEntityManagerFactoryBean {
         return builder
             .dataSource(dataSource)
-            .packages("es.bdo.skeleton.tenant.infrastructure")
+            .managedTypes(managedTypes)
             .persistenceUnit("catalog")
             .build()
     }
@@ -43,3 +53,4 @@ class CatalogJpaConfig {
         return JpaTransactionManager(emf)
     }
 }
+

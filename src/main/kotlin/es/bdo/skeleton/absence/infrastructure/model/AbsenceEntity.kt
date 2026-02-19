@@ -20,6 +20,6 @@ data class AbsenceEntity(
     @Column(name = "start_date", nullable = false)
     val startDate: LocalDate,
 
-    @Column(name = "end_date", nullable = false)
+    @Column(name = "end_date", nullable = true)
     val endDate: LocalDate? = null
 )

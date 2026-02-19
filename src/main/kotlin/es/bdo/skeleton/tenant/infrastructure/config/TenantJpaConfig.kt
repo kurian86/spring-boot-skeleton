@@ -11,6 +11,7 @@ import org.springframework.context.annotation.Configuration
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories
 import org.springframework.orm.jpa.JpaTransactionManager
 import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean
+import org.springframework.orm.jpa.persistenceunit.PersistenceManagedTypes
 import org.springframework.transaction.PlatformTransactionManager
 import org.springframework.transaction.annotation.EnableTransactionManagement
 import javax.sql.DataSource
@@ -25,15 +26,23 @@ import javax.sql.DataSource
 class TenantJpaConfig {
 
     @Bean
+    fun tenantManagedTypes(): PersistenceManagedTypes =
+        PersistenceManagedTypes.of(
+            "es.bdo.skeleton.absence.infrastructure.model.AbsenceEntity",
+            "es.bdo.skeleton.user.infrastructure.model.UserEntity"
+        )
+
+    @Bean
     fun tenantEntityManagerFactory(
         builder: EntityManagerFactoryBuilder,
         dataSource: DataSource,
         tenantConnectionProvider: TenantConnectionProvider,
-        tenantIdentifierResolver: TenantIdentifierResolver
+        tenantIdentifierResolver: TenantIdentifierResolver,
+        @Qualifier("tenantManagedTypes") managedTypes: PersistenceManagedTypes
     ): LocalContainerEntityManagerFactoryBean {
         return builder
             .dataSource(dataSource)
-            .packages("es.bdo.skeleton.user.infrastructure", "es.bdo.skeleton.absence.infrastructure")
+            .managedTypes(managedTypes)
             .persistenceUnit("tenant")
             .properties(
                 mapOf(
@@ -51,3 +60,4 @@ class TenantJpaConfig {
         return JpaTransactionManager(emf)
     }
 }
+
