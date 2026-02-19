@@ -29,4 +29,39 @@ class UserFilterSpecificationTest {
         // Assert
         assertThat(spec).isNotNull
     }
+
+    @Test
+    fun `toSpecification with LIKE filter on name should create valid spec`() {
+        // Arrange
+        val filters = listOf(
+            FilterGroup(
+                filters = listOf(
+                    Filter(property = "name", value = "John", operator = Operator.LIKE)
+                )
+            )
+        )
+
+        // Act
+        val spec: Specification<UserEntity>? = specification.toSpecification(filters)
+
+        // Assert
+        assertThat(spec).isNotNull
+    }
+
+    @Test
+    fun `toSpecification with invalid property should throw IllegalArgumentException`() {
+        // Arrange
+        val filters = listOf(
+            FilterGroup(
+                filters = listOf(
+                    Filter(property = "invalidField", value = "test", operator = Operator.EQUALITY)
+                )
+            )
+        )
+
+        // Act & Assert
+        org.junit.jupiter.api.assertThrows<IllegalArgumentException> {
+            specification.toSpecification(filters)
+        }
+    }
 }
