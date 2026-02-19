@@ -14,25 +14,20 @@ class AbsenceRepository(
     private val jpaRepository: AbsenceJpaRepository
 ) : IAbsenceRepository {
 
-    override fun count(filters: List<FilterGroup>): Long {
-        // For now, ignore filters as we don't have specification for absence
-        return jpaRepository.count()
-    }
-
     override fun findAll(
         offset: Long,
         limit: Int,
         sort: Sort?,
         filters: List<FilterGroup>
-    ): List<Absence> {
+    ): Pair<Long, List<Absence>> {
         val pageable = PageRequest.of(
             (offset / limit).toInt(),
             limit,
             buildSpringSort(sort)
         )
 
-        return jpaRepository.findAll(pageable).content
-            .map { it.toDomain() }
+        return jpaRepository.findAll(pageable)
+            .let { page -> page.totalElements to page.content.map { it.toDomain() } }
     }
 
     private fun buildSpringSort(sort: Sort?): SpringSort {

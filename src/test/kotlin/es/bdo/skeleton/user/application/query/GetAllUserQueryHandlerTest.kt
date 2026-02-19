@@ -33,8 +33,7 @@ class GetAllUserQueryHandlerTest {
     @Test
     fun `handle returns empty PaginationResult when repository is empty`() {
         // Arrange
-        whenever(repository.count(emptyList())).thenReturn(0L)
-        whenever(repository.findAll(0, 10, null, emptyList())).thenReturn(emptyList())
+        whenever(repository.findAll(0, 10, null, emptyList())).thenReturn(0L to emptyList())
 
         // Act
         val result = handler.handle(GetAllUserQuery()).getOrThrow()
@@ -47,8 +46,7 @@ class GetAllUserQueryHandlerTest {
     @Test
     fun `handle returns correct totalCount`() {
         // Arrange
-        whenever(repository.count(emptyList())).thenReturn(3L)
-        whenever(repository.findAll(0, 10, null, emptyList())).thenReturn(listOf(user(), user(), user()))
+        whenever(repository.findAll(0, 10, null, emptyList())).thenReturn(3L to listOf(user(), user(), user()))
 
         // Act
         val result = handler.handle(GetAllUserQuery()).getOrThrow()
@@ -61,8 +59,7 @@ class GetAllUserQueryHandlerTest {
     fun `handle maps users to DTOs`() {
         // Arrange
         val u = user("Bob")
-        whenever(repository.count(emptyList())).thenReturn(1L)
-        whenever(repository.findAll(0, 10, null, emptyList())).thenReturn(listOf(u))
+        whenever(repository.findAll(0, 10, null, emptyList())).thenReturn(1L to listOf(u))
 
         // Act
         val result = handler.handle(GetAllUserQuery()).getOrThrow()
@@ -77,8 +74,7 @@ class GetAllUserQueryHandlerTest {
     @Test
     fun `handle sets roles to ROLE_USER for every user`() {
         // Arrange
-        whenever(repository.count(emptyList())).thenReturn(2L)
-        whenever(repository.findAll(0, 10, null, emptyList())).thenReturn(listOf(user(), user()))
+        whenever(repository.findAll(0, 10, null, emptyList())).thenReturn(2L to listOf(user(), user()))
 
         // Act
         val result = handler.handle(GetAllUserQuery()).getOrThrow()
@@ -92,7 +88,7 @@ class GetAllUserQueryHandlerTest {
     @Test
     fun `handle returns Result failure when repository throws`() {
         // Arrange
-        whenever(repository.count(emptyList())).thenThrow(RuntimeException("DB error"))
+        whenever(repository.findAll(0, 10, null, emptyList())).thenThrow(RuntimeException("DB error"))
 
         // Act
         val result = handler.handle(GetAllUserQuery())
@@ -105,8 +101,7 @@ class GetAllUserQueryHandlerTest {
     @Test
     fun `handle items count matches list size`() {
         // Arrange
-        whenever(repository.count(emptyList())).thenReturn(2L)
-        whenever(repository.findAll(0, 10, null, emptyList())).thenReturn(listOf(user(), user()))
+        whenever(repository.findAll(0, 10, null, emptyList())).thenReturn(2L to listOf(user(), user()))
 
         // Act
         val result = handler.handle(GetAllUserQuery()).getOrThrow()
@@ -125,16 +120,13 @@ class GetAllUserQueryHandlerTest {
             sort = null,
             filters = emptyList()
         )
-        
-        whenever(repository.count(emptyList())).thenReturn(100)
-        whenever(repository.findAll(offset, limit, null, emptyList())).thenReturn(emptyList())
+        whenever(repository.findAll(offset, limit, null, emptyList())).thenReturn(100L to emptyList())
 
         // Act
         handler.handle(query)
 
         // Assert
         verify(repository).findAll(offset, limit, null, emptyList())
-        verify(repository).count(emptyList())
     }
 
     @Test
@@ -152,10 +144,8 @@ class GetAllUserQueryHandlerTest {
             sort = null,
             filters = filters
         )
-        
         val u = user("John")
-        whenever(repository.count(filters)).thenReturn(1)
-        whenever(repository.findAll(0, 10, null, filters)).thenReturn(listOf(u))
+        whenever(repository.findAll(0, 10, null, filters)).thenReturn(1L to listOf(u))
 
         // Act
         val result = handler.handle(query).getOrThrow()
@@ -164,6 +154,5 @@ class GetAllUserQueryHandlerTest {
         assertThat(result.items).hasSize(1)
         assertThat(result.totalCount).isEqualTo(1)
         verify(repository).findAll(0, 10, null, filters)
-        verify(repository).count(filters)
     }
 }

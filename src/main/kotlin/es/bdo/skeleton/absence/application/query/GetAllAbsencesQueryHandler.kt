@@ -19,9 +19,8 @@ class GetAllAbsencesQueryHandler(
             val sort = query.sort
             val filters = query.filters
 
-            val total = repository.count(filters)
-            val items = repository.findAll(offset, limit, sort, filters)
-                .map { it.toDTO() }
+            val (total, items) = repository.findAll(offset, limit, sort, filters)
+                .let { (total, absences) -> total to absences.map { it.toDTO() } }
 
             PaginationResult.from(
                 totalCount = total,

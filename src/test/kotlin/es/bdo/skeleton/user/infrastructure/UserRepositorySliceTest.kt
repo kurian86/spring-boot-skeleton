@@ -271,11 +271,12 @@ class UserRepositorySliceTest {
         )
 
         // Act
-        val result = userRepository.findAll(0, 10, null, filters)
+        val (total, items) = userRepository.findAll(0, 10, null, filters)
 
         // Assert
-        assertThat(result).hasSize(1)
-        assertThat(result[0].status).isEqualTo(UserStatus.ACTIVE)
+        assertThat(total).isEqualTo(1L)
+        assertThat(items).hasSize(1)
+        assertThat(items[0].status).isEqualTo(UserStatus.ACTIVE)
     }
 
     @Test
@@ -295,15 +296,16 @@ class UserRepositorySliceTest {
         )
 
         // Act
-        val result = userRepository.findAll(0, 10, null, filters)
+        val (total, items) = userRepository.findAll(0, 10, null, filters)
 
         // Assert
-        assertThat(result).hasSize(1)
-        assertThat(result[0].name).isEqualTo("John Doe")
+        assertThat(total).isEqualTo(1L)
+        assertThat(items).hasSize(1)
+        assertThat(items[0].name).isEqualTo("John Doe")
     }
 
     @Test
-    fun `count with filters should return filtered count`() {
+    fun `findAll totalCount reflects all matching records across pages`() {
         // Arrange
         jpaRepository.save(entity(email = "active1@example.com", status = UserStatus.ACTIVE))
         jpaRepository.save(entity(email = "active2@example.com", status = UserStatus.ACTIVE))
@@ -318,9 +320,9 @@ class UserRepositorySliceTest {
         )
 
         // Act
-        val result = userRepository.count(filters)
+        val (total, _) = userRepository.findAll(0, 10, null, filters)
 
         // Assert
-        assertThat(result).isEqualTo(2L)
+        assertThat(total).isEqualTo(2L)
     }
 }

@@ -24,8 +24,7 @@ class GetAllAbsencesQueryHandlerTest {
     @Test
     fun `handle returns success with empty PaginationResult when repository is empty`() {
         // Arrange
-        `when`(repository.count(emptyList())).thenReturn(0L)
-        `when`(repository.findAll(0, 10, null, emptyList())).thenReturn(emptyList())
+        `when`(repository.findAll(0, 10, null, emptyList())).thenReturn(0L to emptyList())
 
         // Act
         val result = handler.handle(GetAllAbsencesQuery())
@@ -40,8 +39,7 @@ class GetAllAbsencesQueryHandlerTest {
     @Test
     fun `handle returns correct totalCount from repository`() {
         // Arrange
-        `when`(repository.count(emptyList())).thenReturn(3L)
-        `when`(repository.findAll(0, 10, null, emptyList())).thenReturn(emptyList())
+        `when`(repository.findAll(0, 10, null, emptyList())).thenReturn(3L to emptyList())
 
         // Act
         val result = handler.handle(GetAllAbsencesQuery())
@@ -54,8 +52,7 @@ class GetAllAbsencesQueryHandlerTest {
     fun `handle maps absences to DTOs`() {
         // Arrange
         val absence = Absence(id = UUID.randomUUID(), userId = userId, startDate = startDate, endDate = endDate)
-        `when`(repository.count(emptyList())).thenReturn(1L)
-        `when`(repository.findAll(0, 10, null, emptyList())).thenReturn(listOf(absence))
+        `when`(repository.findAll(0, 10, null, emptyList())).thenReturn(1L to listOf(absence))
 
         // Act
         val result = handler.handle(GetAllAbsencesQuery())
@@ -72,8 +69,7 @@ class GetAllAbsencesQueryHandlerTest {
     fun `handle maps absence with null endDate to DTO`() {
         // Arrange
         val absence = Absence(id = UUID.randomUUID(), userId = userId, startDate = startDate, endDate = null)
-        `when`(repository.count(emptyList())).thenReturn(1L)
-        `when`(repository.findAll(0, 10, null, emptyList())).thenReturn(listOf(absence))
+        `when`(repository.findAll(0, 10, null, emptyList())).thenReturn(1L to listOf(absence))
 
         // Act
         val result = handler.handle(GetAllAbsencesQuery())
@@ -88,8 +84,7 @@ class GetAllAbsencesQueryHandlerTest {
         val absences = (1..3).map {
             Absence(id = UUID.randomUUID(), userId = userId, startDate = startDate.plusDays(it.toLong()))
         }
-        `when`(repository.count(emptyList())).thenReturn(3L)
-        `when`(repository.findAll(0, 10, null, emptyList())).thenReturn(absences)
+        `when`(repository.findAll(0, 10, null, emptyList())).thenReturn(3L to absences)
 
         // Act
         val result = handler.handle(GetAllAbsencesQuery())
@@ -101,7 +96,7 @@ class GetAllAbsencesQueryHandlerTest {
     @Test
     fun `handle returns failure when repository throws exception`() {
         // Arrange
-        `when`(repository.count(emptyList())).thenThrow(RuntimeException("DB error"))
+        `when`(repository.findAll(0, 10, null, emptyList())).thenThrow(RuntimeException("DB error"))
 
         // Act
         val result = handler.handle(GetAllAbsencesQuery())
@@ -113,16 +108,14 @@ class GetAllAbsencesQueryHandlerTest {
     }
 
     @Test
-    fun `handle calls both count and findAll on repository`() {
+    fun `handle calls findAll on repository with query parameters`() {
         // Arrange
-        `when`(repository.count(emptyList())).thenReturn(0L)
-        `when`(repository.findAll(0, 10, null, emptyList())).thenReturn(emptyList())
+        `when`(repository.findAll(0, 10, null, emptyList())).thenReturn(0L to emptyList())
 
         // Act
         handler.handle(GetAllAbsencesQuery())
 
         // Assert
-        verify(repository).count(emptyList())
         verify(repository).findAll(0, 10, null, emptyList())
     }
 }

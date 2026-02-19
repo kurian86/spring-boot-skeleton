@@ -10,8 +10,8 @@ class AbsenceProvider(
     private val absenceRepository: AbsenceRepository
 ) {
 
-    fun findAll(): List<AbsenceDTO> {
+    fun findAll(): Pair<Long, List<AbsenceDTO>> {
         return absenceRepository.findAll(0, 10, null, emptyList())
-            .map { it.toDTO() }
+            .let { (total, absences) -> total to absences.map { it.toDTO() } }
     }
 }

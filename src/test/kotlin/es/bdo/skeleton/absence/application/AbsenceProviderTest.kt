@@ -1,6 +1,5 @@
 package es.bdo.skeleton.absence.application
 
-import es.bdo.skeleton.absence.application.model.AbsenceDTO
 import es.bdo.skeleton.absence.domain.Absence
 import es.bdo.skeleton.absence.domain.AbsenceRepository
 import org.assertj.core.api.Assertions.assertThat
@@ -23,13 +22,14 @@ class AbsenceProviderTest {
     @Test
     fun `findAll returns empty list when repository has no absences`() {
         // Arrange
-        `when`(repository.findAll(0, 10, null, emptyList())).thenReturn(emptyList())
+        `when`(repository.findAll(0, 10, null, emptyList())).thenReturn(0L to emptyList())
 
         // Act
-        val result = provider.findAll()
+        val (total, items) = provider.findAll()
 
         // Assert
-        assertThat(result).isEmpty()
+        assertThat(total).isEqualTo(0L)
+        assertThat(items).isEmpty()
     }
 
     @Test
@@ -39,14 +39,13 @@ class AbsenceProviderTest {
             Absence(id = UUID.randomUUID(), userId = userId, startDate = startDate, endDate = endDate),
             Absence(id = UUID.randomUUID(), userId = userId, startDate = startDate.plusDays(10), endDate = null)
         )
-        `when`(repository.findAll(0, 10, null, emptyList())).thenReturn(absences)
+        `when`(repository.findAll(0, 10, null, emptyList())).thenReturn(2L to absences)
 
         // Act
-        val result = provider.findAll()
+        val (_, items) = provider.findAll()
 
         // Assert
-        assertThat(result).hasSize(2)
-        assertThat(result).allSatisfy { assertThat(it).isInstanceOf(AbsenceDTO::class.java) }
+        assertThat(items).hasSize(2)
     }
 
     @Test
@@ -54,13 +53,13 @@ class AbsenceProviderTest {
         // Arrange
         val absenceId = UUID.randomUUID()
         val absence = Absence(id = absenceId, userId = userId, startDate = startDate, endDate = endDate)
-        `when`(repository.findAll(0, 10, null, emptyList())).thenReturn(listOf(absence))
+        `when`(repository.findAll(0, 10, null, emptyList())).thenReturn(1L to listOf(absence))
 
         // Act
-        val result = provider.findAll()
+        val (_, items) = provider.findAll()
 
         // Assert
-        val dto = result.single()
+        val dto = items.single()
         assertThat(dto.id).isEqualTo(absenceId)
         assertThat(dto.userId).isEqualTo(userId)
         assertThat(dto.startDate).isEqualTo(startDate)
@@ -71,19 +70,19 @@ class AbsenceProviderTest {
     fun `findAll preserves null endDate in DTO`() {
         // Arrange
         val absence = Absence(id = UUID.randomUUID(), userId = userId, startDate = startDate, endDate = null)
-        `when`(repository.findAll(0, 10, null, emptyList())).thenReturn(listOf(absence))
+        `when`(repository.findAll(0, 10, null, emptyList())).thenReturn(1L to listOf(absence))
 
         // Act
-        val result = provider.findAll()
+        val (_, items) = provider.findAll()
 
         // Assert
-        assertThat(result.single().endDate).isNull()
+        assertThat(items.single().endDate).isNull()
     }
 
     @Test
     fun `findAll delegates to repository`() {
         // Arrange
-        `when`(repository.findAll(0, 10, null, emptyList())).thenReturn(emptyList())
+        `when`(repository.findAll(0, 10, null, emptyList())).thenReturn(0L to emptyList())
 
         // Act
         provider.findAll()

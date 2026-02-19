@@ -9,6 +9,7 @@ import es.bdo.skeleton.user.infrastructure.specification.UserFilterSpecification
 import org.springframework.data.domain.PageRequest
 import org.springframework.stereotype.Repository
 import es.bdo.skeleton.user.domain.UserRepository as IUserRepository
+import org.springframework.data.domain.Sort as SpringSort
 
 @Repository
 class UserRepository(
@@ -16,21 +17,12 @@ class UserRepository(
     private val filterSpecification: UserFilterSpecification
 ) : IUserRepository {
 
-    override fun count(filters: List<FilterGroup>): Long {
-        val spec = filterSpecification.toSpecification(filters)
-        return if (spec != null) {
-            jpaRepository.count(spec)
-        } else {
-            jpaRepository.count()
-        }
-    }
-
     override fun findAll(
         offset: Long,
         limit: Int,
         sort: Sort?,
         filters: List<FilterGroup>
-    ): List<User> {
+    ):  Pair<Long, List<User>> {
         val spec = filterSpecification.toSpecification(filters)
         val pageable = PageRequest.of(
             (offset / limit).toInt(),
@@ -38,19 +30,19 @@ class UserRepository(
             buildSpringSort(sort)
         )
 
-        val entities = if (spec != null) {
-            jpaRepository.findAll(spec, pageable).content
+        val page = if (spec != null) {
+            jpaRepository.findAll(spec, pageable)
         } else {
-            jpaRepository.findAll(pageable).content
+            jpaRepository.findAll(pageable)
         }
 
-        return entities.map { it.toDomain() }
+        return page.totalElements to page.content.map { it.toDomain() }
     }
 
-    private fun buildSpringSort(sort: Sort?): org.springframework.data.domain.Sort {
-        if (sort == null) return org.springframework.data.domain.Sort.unsorted()
+    private fun buildSpringSort(sort: Sort?): SpringSort {
+        if (sort == null) return SpringSort.unsorted()
         
-        return org.springframework.data.domain.Sort.by(
+        return SpringSort.by(
             sort.direction,
             sort.property
         )
