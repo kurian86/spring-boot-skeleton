@@ -1,0 +1,5 @@
+package es.bdo.skeleton.shared.model
+
+enum class Operator {
+    EQUALITY, NEGATION, GREATER_EQUAL_THAN, GREATER_THAN, LESS_EQUAL_THAN, LESS_THAN, LIKE, STARTS_WITH, ENDS_WITH, CONTAINS, IS_NULL
+}
