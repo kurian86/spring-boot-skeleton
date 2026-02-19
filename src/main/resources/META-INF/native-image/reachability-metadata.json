@@ -2,6 +2,15 @@
   "reflection": [
     {
       "type": "java.util.UUID[]"
+    },
+    {
+      "type": "java.lang.String",
+      "methods": [
+        {
+          "name": "hashCode",
+          "parameterTypes": []
+        }
+      ]
     }
   ],
   "resources": [
