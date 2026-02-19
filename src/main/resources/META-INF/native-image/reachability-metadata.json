@@ -2,6 +2,30 @@
   "reflection": [
     {
       "type": "java.util.UUID[]"
+    },
+    {
+      "type": "es.bdo.skeleton.tenant.infrastructure.model.TenantEntity",
+      "allDeclaredConstructors": true,
+      "allDeclaredMethods": true,
+      "allDeclaredFields": true
+    },
+    {
+      "type": "es.bdo.skeleton.tenant.infrastructure.model.ConfigEntity",
+      "allDeclaredConstructors": true,
+      "allDeclaredMethods": true,
+      "allDeclaredFields": true
+    },
+    {
+      "type": "es.bdo.skeleton.user.infrastructure.model.UserEntity",
+      "allDeclaredConstructors": true,
+      "allDeclaredMethods": true,
+      "allDeclaredFields": true
+    },
+    {
+      "type": "es.bdo.skeleton.absence.infrastructure.model.AbsenceEntity",
+      "allDeclaredConstructors": true,
+      "allDeclaredMethods": true,
+      "allDeclaredFields": true
     }
   ],
   "resources": [
