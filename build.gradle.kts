@@ -78,6 +78,8 @@ allOpen {
 
 tasks.withType<Test> {
     useJUnitPlatform()
+    // Suppress dynamic agent loading warnings for Mockito
+    jvmArgs("-XX:+EnableDynamicAgentLoading")
 }
 
 tasks.named<org.springframework.boot.gradle.tasks.bundling.BootBuildImage>("bootBuildImage") {

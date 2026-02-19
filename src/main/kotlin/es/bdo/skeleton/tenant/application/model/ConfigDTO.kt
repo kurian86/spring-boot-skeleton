@@ -4,7 +4,6 @@ import es.bdo.skeleton.tenant.domain.Config
 
 data class ConfigDTO(
     val tenantId: String,
-    val allowedDomains: List<String>,
     val primaryColor: String?,
     val secondaryColor: String?,
     val logoUrl: String?
@@ -13,7 +12,6 @@ data class ConfigDTO(
 fun Config.toDTO(): ConfigDTO {
     return ConfigDTO(
         tenantId,
-        allowedDomains,
         primaryColor,
         secondaryColor,
         logoUrl

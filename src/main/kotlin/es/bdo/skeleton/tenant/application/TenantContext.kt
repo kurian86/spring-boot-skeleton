@@ -1,7 +1,5 @@
 package es.bdo.skeleton.tenant.application
 
-import java.lang.ScopedValue
-
 object TenantContext {
     const val DEFAULT_TENANT = "default"
     
