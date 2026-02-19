@@ -25,12 +25,7 @@ class GetAllUserQueryHandler(
             val items = repository.findAll(offset, limit, sort, filters)
                 .map { it.toDTO() }
 
-            PaginationResult.from(
-                totalCount = total,
-                items = items,
-                offset = offset,
-                limit = limit
-            )
+            PaginationResult.from(total, items, offset, limit)
         }
     }
 }

@@ -23,7 +23,7 @@ class AbsenceProviderTest {
     @Test
     fun `findAll returns empty list when repository has no absences`() {
         // Arrange
-        `when`(repository.findAll()).thenReturn(emptyList())
+        `when`(repository.findAll(0, 10, null, emptyList())).thenReturn(emptyList())
 
         // Act
         val result = provider.findAll()
@@ -39,7 +39,7 @@ class AbsenceProviderTest {
             Absence(id = UUID.randomUUID(), userId = userId, startDate = startDate, endDate = endDate),
             Absence(id = UUID.randomUUID(), userId = userId, startDate = startDate.plusDays(10), endDate = null)
         )
-        `when`(repository.findAll()).thenReturn(absences)
+        `when`(repository.findAll(0, 10, null, emptyList())).thenReturn(absences)
 
         // Act
         val result = provider.findAll()
@@ -54,7 +54,7 @@ class AbsenceProviderTest {
         // Arrange
         val absenceId = UUID.randomUUID()
         val absence = Absence(id = absenceId, userId = userId, startDate = startDate, endDate = endDate)
-        `when`(repository.findAll()).thenReturn(listOf(absence))
+        `when`(repository.findAll(0, 10, null, emptyList())).thenReturn(listOf(absence))
 
         // Act
         val result = provider.findAll()
@@ -71,7 +71,7 @@ class AbsenceProviderTest {
     fun `findAll preserves null endDate in DTO`() {
         // Arrange
         val absence = Absence(id = UUID.randomUUID(), userId = userId, startDate = startDate, endDate = null)
-        `when`(repository.findAll()).thenReturn(listOf(absence))
+        `when`(repository.findAll(0, 10, null, emptyList())).thenReturn(listOf(absence))
 
         // Act
         val result = provider.findAll()
@@ -83,12 +83,12 @@ class AbsenceProviderTest {
     @Test
     fun `findAll delegates to repository`() {
         // Arrange
-        `when`(repository.findAll()).thenReturn(emptyList())
+        `when`(repository.findAll(0, 10, null, emptyList())).thenReturn(emptyList())
 
         // Act
         provider.findAll()
 
         // Assert
-        verify(repository).findAll()
+        verify(repository).findAll(0, 10, null, emptyList())
     }
 }

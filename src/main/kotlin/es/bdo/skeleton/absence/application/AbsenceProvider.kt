@@ -11,7 +11,7 @@ class AbsenceProvider(
 ) {
 
     fun findAll(): List<AbsenceDTO> {
-        return absenceRepository.findAll()
+        return absenceRepository.findAll(0, 10, null, emptyList())
             .map { it.toDTO() }
     }
 }
