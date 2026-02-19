@@ -1,5 +1,7 @@
 package es.bdo.skeleton.user.infrastructure
 
+import es.bdo.skeleton.shared.model.FilterGroup
+import es.bdo.skeleton.shared.model.Sort
 import es.bdo.skeleton.user.domain.User
 import es.bdo.skeleton.user.infrastructure.model.toDomain
 import es.bdo.skeleton.user.infrastructure.model.toEntity
@@ -15,9 +17,17 @@ class UserRepository(
         return jpaRepository.count()
     }
 
+    override fun count(filters: List<FilterGroup>): Long {
+        TODO("Not yet implemented")
+    }
+
     override fun findAll(): List<User> {
         return jpaRepository.findAll()
             .map { it.toDomain() }
+    }
+
+    override fun findAll(offset: Long, limit: Int, sort: Sort?, filters: List<FilterGroup>): List<User> {
+        TODO("Not yet implemented")
     }
 
     override fun findByEmail(email: String): User? {

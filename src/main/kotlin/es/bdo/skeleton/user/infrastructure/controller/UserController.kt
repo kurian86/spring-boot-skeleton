@@ -1,12 +1,15 @@
 package es.bdo.skeleton.user.infrastructure.controller
 
+import es.bdo.skeleton.shared.model.FilterGroup
 import es.bdo.skeleton.shared.model.PaginationResult
+import es.bdo.skeleton.shared.model.Sort
 import es.bdo.skeleton.user.application.model.UserDTO
 import es.bdo.skeleton.user.application.query.GetAllUserQuery
 import es.bdo.skeleton.user.application.query.GetAllUserQueryHandler
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
@@ -17,7 +20,12 @@ class UserController(
 
     @GetMapping
     @PreAuthorize("hasRole('USER')")
-    fun index(): PaginationResult<UserDTO> {
+    fun index(
+        @RequestParam limit: Int?,
+        @RequestParam offset: Long?,
+        @RequestParam sort: Sort?,
+        @RequestParam filters: Array<FilterGroup>?,
+    ): PaginationResult<UserDTO> {
         return getAllUserQueryHandler.handle(GetAllUserQuery())
             .getOrThrow()
     }
