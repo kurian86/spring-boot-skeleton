@@ -15,12 +15,37 @@ class UserFilterSpecification {
     fun toSpecification(filters: List<FilterGroup>): Specification<UserEntity>? {
         if (filters.isEmpty()) return null
 
+        // Validate filters early to fail fast
+        filters.flatMap { it.filters }.forEach { filter ->
+            validateFilter(filter)
+        }
+
         return Specification { root, query, cb ->
             val predicates = filters.map { filterGroup ->
                 buildFilterGroupPredicate(filterGroup, root, cb)
             }
 
             cb.and(*predicates.toTypedArray())
+        }
+    }
+
+    private fun validateFilter(filter: Filter) {
+        val validProperties = setOf("id", "name", "email", "status")
+        if (filter.property !in validProperties) {
+            throw IllegalArgumentException("Property ${filter.property} not filterable")
+        }
+
+        // Validate operator-property combinations
+        when (filter.operator) {
+            Operator.LIKE -> {
+                if (filter.property !in setOf("name", "email")) {
+                    throw IllegalArgumentException("Operator LIKE not supported for property ${filter.property}")
+                }
+            }
+            Operator.GREATER_THAN, Operator.LESS_THAN -> {
+                throw IllegalArgumentException("Operator ${filter.operator} not yet implemented")
+            }
+            else -> { /* Other operators are fine */ }
         }
     }
 
